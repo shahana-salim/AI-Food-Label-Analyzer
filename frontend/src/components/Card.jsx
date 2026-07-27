@@ -1,6 +1,17 @@
 function Card({ children }) {
   return (
-    <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+    <div
+      className="
+        w-full
+        max-w-md
+        bg-white
+        rounded-2xl
+        shadow-2xl
+        border
+        border-gray-100
+        p-8
+      "
+    >
       {children}
     </div>
   );
