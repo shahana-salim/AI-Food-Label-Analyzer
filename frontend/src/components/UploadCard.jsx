@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
+import api from "../services/api";
+import AnalysisResult from "./AnalysisResult";
 
 function UploadCard() {
     const [selectedImage, setSelectedImage] = useState(null);
     const [preview, setPreview] = useState(null);
+    const [analysisResult, setAnalysisResult] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
     const handleFileChange = (event) => {
         const file = event.target.files[0];
 
@@ -18,7 +23,42 @@ function UploadCard() {
 
         document.getElementById("food-label-input").value = "";
     };
+    const handleAnalyze = async () => {
+        if (!selectedImage) return;
+
+        setLoading(true);
+        setError("");
+        setAnalysisResult(null);
+
+        try {
+            const formData = new FormData();
+            formData.append("image", selectedImage);
+
+            const token = localStorage.getItem("access_token");
+
+            const response = await api.post(
+                "upload-label/",
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            setAnalysisResult(response.data);
+            console.log(response.data);
+
+        } catch (err) {
+            console.error(err);
+            setError("Failed to analyze image. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
+        <>
         <div className="bg-white rounded-2xl shadow-md p-8 mt-8">
 
             <div className="text-center">
@@ -144,19 +184,21 @@ function UploadCard() {
                         </button>
 
                         <button
+                            onClick={handleAnalyze}
+                            disabled={loading}
                             className="
-                               px-6
-                               py-3
-                               rounded-xl
-                               bg-emerald-600
-                               hover:bg-emerald-700
-                               text-white
-                               transition
+                                px-6
+                                py-3
+                                rounded-xl
+                                bg-emerald-600
+                                hover:bg-emerald-700
+                                text-white
+                                transition
+                                disabled:bg-emerald-400
                             "
                         >
-                            Analyze Label
+                            {loading ? "Analyzing..." : "Analyze Label"}
                         </button>
-
                     </div>
 
                 </div>
@@ -164,6 +206,10 @@ function UploadCard() {
             )}
 
         </div>
+        {analysisResult && (
+            <AnalysisResult analysis={analysisResult.analysis} />
+        )}
+    </>
     );
 }
 
