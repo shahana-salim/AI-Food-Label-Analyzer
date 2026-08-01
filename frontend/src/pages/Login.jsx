@@ -43,7 +43,7 @@ function Login() {
 
       console.log("Tokens saved successfully");
 
-      navigate("/dashboard");
+      navigate("/");
 
      } catch (error) {
        console.error(error.response?.data || error.message);

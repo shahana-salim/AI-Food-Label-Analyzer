@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .utils import extract_text_from_image, clean_extracted_text
@@ -10,14 +10,17 @@ from .serializers import FoodLabelSerializer
 
 
 class FoodLabelUploadView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
 
         serializer = FoodLabelSerializer(data=request.data)
 
         if serializer.is_valid():
-            food_label = serializer.save(user=request.user)
+            if request.user.is_authenticated:
+               food_label = serializer.save(user=request.user)
+            else:
+               food_label = serializer.save()
             ocr_text = extract_text_from_image(food_label.image.path)
             clean_text = clean_extracted_text(ocr_text)
             analysis = analyze_food_label(clean_text)

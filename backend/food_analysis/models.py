@@ -5,7 +5,9 @@ from django.contrib.auth.models import User
 class FoodLabel(models.Model):
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
 
     image = models.ImageField(
@@ -20,4 +22,6 @@ class FoodLabel(models.Model):
         ordering = ["-uploaded_at"]
 
     def __str__(self):
-        return f"{self.user.email} - {self.uploaded_at}"
+        if self.user:
+            return f"{self.user.email} - {self.uploaded_at}"
+        return f"Guest - {self.uploaded_at}"

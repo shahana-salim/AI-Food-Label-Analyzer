@@ -1,12 +1,17 @@
 import {
     FaHome,
-    FaUpload,
     FaHistory,
     FaUserCircle,
     FaSignOutAlt,
+    FaSignInAlt,
+    FaUserPlus,
 } from "react-icons/fa";
 
+import { useNavigate } from "react-router-dom";
 function Sidebar({ handleLogout }) {
+    const navigate = useNavigate();
+
+    const isLoggedIn = !!localStorage.getItem("access_token");
     return (
         <aside className="w-64 bg-emerald-700 text-white flex flex-col">
 
@@ -25,44 +30,73 @@ function Sidebar({ handleLogout }) {
             </div>
 
             {/* Navigation */}
-
             <nav className="flex-1 p-4">
 
-                <button className="flex items-center gap-3 w-full p-3 rounded-lg bg-emerald-600">
+                {/* Dashboard */}
+
+                <button
+                    onClick={() => navigate("/")}
+                    className="flex items-center gap-3 w-full p-3 rounded-lg bg-emerald-600"
+                >
                     <FaHome />
                     Dashboard
                 </button>
 
-                <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2">
-                    <FaUpload />
-                    Upload
-                </button>
+                {!isLoggedIn ? (
 
-                <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2">
-                    <FaHistory />
-                    History
-                </button>
+                    <>
+                        <button
+                            onClick={() => navigate("/login")}
+                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2"
+                        >
+                            <FaSignInAlt />
+                            Login
+                        </button>
 
-                <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2">
-                    <FaUserCircle />
-                    Profile
-                </button>
+                        <button
+                            onClick={() => navigate("/register")}
+                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2"
+                        >
+                            <FaUserPlus />
+                            Sign Up
+                        </button>
+                    </>
+
+                ) : (
+
+                    <>
+                        <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2">
+                            <FaHistory />
+                            History
+                        </button>
+
+                        <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2">
+                            <FaUserCircle />
+                            Profile
+                        </button>
+                    </>
+
+                )}
 
             </nav>
 
             {/* Logout */}
 
-            <div className="p-4 border-t border-emerald-600">
+            {isLoggedIn && (
 
-                <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-red-600 transition"
-                >
-                    <FaSignOutAlt />
-                    Logout
-                </button>
+                <div className="p-4 border-t border-emerald-600">
 
-            </div>
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-red-600 transition"
+                    >
+                        <FaSignOutAlt />
+                        Logout
+                    </button>
+
+                </div>
+
+            )}
 
         </aside>
     );
