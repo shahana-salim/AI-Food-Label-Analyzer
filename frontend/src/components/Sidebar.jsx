@@ -65,12 +65,18 @@ function Sidebar({ handleLogout }) {
                 ) : (
 
                     <>
-                        <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2">
+                        <button
+                            onClick={() => navigate("/history")}
+                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2"
+                        >
                             <FaHistory />
                             History
                         </button>
 
-                        <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2">
+                        <button
+                            onClick={() => navigate("/profile")}
+                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2"
+                        >
                             <FaUserCircle />
                             Profile
                         </button>

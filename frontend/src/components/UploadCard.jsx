@@ -8,7 +8,7 @@ function UploadCard() {
     const [preview, setPreview] = useState(null);
     const [analysisResult, setAnalysisResult] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [, setError] = useState("");
     const handleFileChange = (event) => {
         const file = event.target.files[0];
 

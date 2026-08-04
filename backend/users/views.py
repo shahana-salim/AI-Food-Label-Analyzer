@@ -1,8 +1,10 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from .serializers import RegisterSerializer, LoginSerializer
+from .serializers import RegisterSerializer, LoginSerializer,UserProfileSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 
 @api_view(['GET'])
 def hello_api(request):
@@ -54,3 +56,11 @@ def login_user(request):
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST
     )
+
+
+class UserProfileView(RetrieveUpdateAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

@@ -51,7 +51,7 @@ function Login() {
     }
   };
 return (
-  <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-100 flex items-center justify-center px-6">
+  <div className="min-h-screen bg-linear-to-br from-green-50 via-white to-emerald-100 flex items-center justify-center px-6">
 
     <div className="max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center">
 
