@@ -64,30 +64,10 @@ function PersonalInformation() {
                 ]}
             />
             <h1 className="text-3xl font-bold mb-8">
-                My Profile
+                Personal Information
             </h1>
 
             <div className="bg-white rounded-2xl shadow-md p-8 space-y-6">
-
-                <div>
-                    <p className="text-sm text-slate-500">
-                        Username
-                    </p>
-
-                    <p className="text-lg font-semibold">
-                        {profile.username}
-                    </p>
-                </div>
-
-                <div>
-                    <p className="text-sm text-slate-500">
-                        Email
-                    </p>
-
-                    <p className="text-lg font-semibold">
-                        {profile.email}
-                    </p>
-                </div>
 
                 <div>
                     <p className="text-sm text-slate-500">
@@ -160,6 +140,35 @@ function PersonalInformation() {
                     >
                         Save Changes
                     </button>
+                </div>
+                <hr className="my-8 border-slate-200" />
+                <div>
+
+                    <p className="text-sm text-slate-500">
+                        Email
+                    </p>
+
+                    <p className="text-lg font-semibold mt-2">
+                        {profile.email}
+                    </p>
+
+                    <button
+                        onClick={() => alert("Change Email feature coming soon")}
+                        className="
+            mt-5
+            border
+            border-emerald-600
+            text-emerald-600
+            hover:bg-emerald-50
+            px-5
+            py-2
+            rounded-lg
+            transition
+        "
+                    >
+                        Change Email
+                    </button>
+
                 </div>
 
             </div>

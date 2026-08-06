@@ -7,11 +7,50 @@ import {
     FaUserPlus,
 } from "react-icons/fa";
 
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import api from "../services/api";
+
 function Sidebar({ handleLogout }) {
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
     const navigate = useNavigate();
 
-    const isLoggedIn = !!localStorage.getItem("access_token");
+    useEffect(() => {
+
+        const checkAuth = async () => {
+
+            const token = localStorage.getItem("access_token");
+
+            if (!token) {
+                setIsLoggedIn(false);
+                return;
+            }
+
+            try {
+
+                await api.get("profile/", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                setIsLoggedIn(true);
+
+            } catch (error) {
+
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("refresh_token");
+
+                setIsLoggedIn(false);
+
+            }
+
+        };
+
+        checkAuth();
+
+    }, []);
     return (
         <aside className="w-64 bg-emerald-700 text-white flex flex-col">
 
