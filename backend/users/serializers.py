@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from .models import UserProfile
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -84,4 +85,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
+        ]
+
+class HealthPreferenceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            "allergies",
+            "other_allergy",
+            "dietary_preference",
+            "medical_conditions",
+            "other_medical_condition",
         ]
