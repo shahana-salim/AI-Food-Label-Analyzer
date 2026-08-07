@@ -156,7 +156,7 @@ function AnalysisResult({ analysis }) {
                     <TriangleAlert className="text-orange-500" size={24} />
 
                     <h3 className="text-2xl font-semibold text-slate-800">
-                        Allergens
+                       Common Allergens
                     </h3>
                 </div>
 

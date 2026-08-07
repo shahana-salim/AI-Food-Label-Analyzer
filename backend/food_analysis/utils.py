@@ -1,19 +1,29 @@
 import easyocr
+import re
+import tempfile
 
 # Initialize the OCR reader
-reader = easyocr.Reader(['en'])
+reader = easyocr.Reader(["en"])
 
-def extract_text_from_image(image_path):
+
+def extract_text_from_image(image_file):
     """
-    Extracts text from an image using EasyOCR.
+    Extracts text from an uploaded image using EasyOCR.
     """
-    results = reader.readtext(image_path, detail=0)
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp:
+
+        for chunk in image_file.chunks():
+            temp.write(chunk)
+
+        temp_path = temp.name
+
+    results = reader.readtext(temp_path, detail=0)
 
     extracted_text = " ".join(results)
 
     return extracted_text
 
-import re
 
 def clean_extracted_text(text):
     """
