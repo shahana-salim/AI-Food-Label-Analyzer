@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+
 import Sidebar from "../components/Sidebar";
 import HeroCard from "../components/HeroCard";
 import StatCard from "../components/StatCard";
@@ -12,12 +12,10 @@ import {
 
 function Dashboard() {
 
-    const navigate = useNavigate();
-
     const handleLogout = () => {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
-        navigate("/");
+        window.location.href = "/";
     };
 
     return (

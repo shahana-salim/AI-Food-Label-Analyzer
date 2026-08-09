@@ -20,7 +20,7 @@ function AnalysisResult({ analysis }) {
                 <Sparkles className="text-emerald-600" size={34} />
 
                 <h2 className="text-3xl font-bold text-slate-800">
-                    AI Food Label Analysis
+                    AI Analysis
                 </h2>
             </div>
 
@@ -99,11 +99,13 @@ function AnalysisResult({ analysis }) {
 
                 <div className="grid gap-5">
 
-                    {analysis.additives?.map((additive, index) => (
+                    {analysis.additives && analysis.additives.length > 0 ? (
 
-                        <div
-                            key={index}
-                            className="
+                        analysis.additives.map((additive, index) => (
+
+                            <div
+                                key={index}
+                                className="
                     rounded-xl
                     border
                     border-purple-200
@@ -111,39 +113,47 @@ function AnalysisResult({ analysis }) {
                     p-5
                     shadow-sm
                 "
-                        >
+                            >
 
-                            <h4 className="text-xl font-bold text-purple-700">
-                                {additive.name}
-                            </h4>
+                                <h4 className="text-xl font-bold text-purple-700">
+                                    {additive.name}
+                                </h4>
 
-                            <div className="mt-4 space-y-3">
+                                <div className="mt-4 space-y-3">
 
-                                <div>
-                                    <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                                        Purpose
-                                    </p>
+                                    <div>
+                                        <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                            Purpose
+                                        </p>
 
-                                    <p className="text-slate-700">
-                                        {additive.purpose}
-                                    </p>
-                                </div>
+                                        <p className="text-slate-700">
+                                            {additive.purpose}
+                                        </p>
+                                    </div>
 
-                                <div>
-                                    <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                                        Health Note
-                                    </p>
+                                    <div>
+                                        <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                            Health Note
+                                        </p>
 
-                                    <p className="text-slate-700">
-                                        {additive.health_note}
-                                    </p>
+                                        <p className="text-slate-700">
+                                            {additive.health_note}
+                                        </p>
+                                    </div>
+
                                 </div>
 
                             </div>
 
-                        </div>
+                        ))
 
-                    ))}
+                    ) : (
+
+                        <p className="text-slate-500">
+                            No additives identified from the provided label.
+                        </p>
+
+                    )}
 
                 </div>
 
@@ -156,7 +166,7 @@ function AnalysisResult({ analysis }) {
                     <TriangleAlert className="text-orange-500" size={24} />
 
                     <h3 className="text-2xl font-semibold text-slate-800">
-                       Common Allergens
+                        Common Allergens
                     </h3>
                 </div>
 

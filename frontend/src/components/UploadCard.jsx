@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import api from "../services/api";
 import AnalysisResult from "./AnalysisResult";
@@ -8,7 +8,36 @@ function UploadCard() {
     const [previews, setPreviews] = useState([]);
     const [analysisResult, setAnalysisResult] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState(
+        "Reading your food label..."
+    );
     const [error, setError] = useState("");
+    useEffect(() => {
+
+        if (!loading) return;
+
+        const messages = [
+            "Reading your food label...",
+            "Extracting ingredients...",
+            "Analyzing the food information...",
+            "Preparing your results..."
+        ];
+
+        let index = 0;
+
+        setLoadingMessage(messages[0]);
+
+        const interval = setInterval(() => {
+
+            index = (index + 1) % messages.length;
+
+            setLoadingMessage(messages[index]);
+
+        }, 3000);
+
+        return () => clearInterval(interval);
+
+    }, [loading]);
     const isLoggedIn = !!localStorage.getItem("access_token");
     const handleFileChange = (event) => {
 
@@ -38,13 +67,6 @@ function UploadCard() {
         setPreviews(
             updatedImages.map(file => URL.createObjectURL(file))
         );
-    };
-    const handleRemove = () => {
-        setSelectedImages([]);
-        setPreviews([]);
-
-        document.getElementById("food-label-input").value = "";
-
     };
 
     const removeImage = (index) => {
@@ -121,14 +143,24 @@ function UploadCard() {
 
                 <div className="text-center">
 
-                    <h2 className="text-3xl font-bold text-slate-800">
+                    <h2 className="text-3xl font-bold text-slate-800 mb-3">
                         Start Your Analysis
                     </h2>
 
-                    <p className="text-slate-500 mt-3">
-                        {isLoggedIn
-                            ? "Upload up to 3 images for a more complete and accurate AI analysis."
-                            : "Upload a single image of a packaged food label for quick AI analysis."}
+                    <p className="text-gray-500 text-base mb-8">
+                        {isLoggedIn ? (
+                            "Upload up to 3 images for a more complete and accurate AI analysis."
+                        ) : (
+                            <>
+                                <span className="block">
+                                    Upload a single image for quick AI analysis.
+                                </span>
+
+                                <span className="block mt-2.5">
+                                    Sign in to upload up to 3 images for more accurate results.
+                                </span>
+                            </>
+                        )}
                     </p>
 
                 </div>
@@ -186,10 +218,8 @@ function UploadCard() {
                             Browse Files
                         </button>
 
-                        <p className="text-sm text-slate-400 mt-6">
-                            {isLoggedIn
-                                ? "Logged-in users can upload up to 3 images (JPG, JPEG, PNG)."
-                                : "Supported formats: JPG, JPEG, PNG"}
+                        <p className="text-gray-400 mt-8">
+                            Supported formats: JPG, JPEG, PNG
                         </p>
 
                     </div>
@@ -221,6 +251,7 @@ function UploadCard() {
 
                                         <button
                                             onClick={() => removeImage(index)}
+                                            disabled={loading}
                                             className="
                                                 absolute
                                                 -top-3
@@ -236,6 +267,8 @@ function UploadCard() {
                                                 justify-center
                                                 shadow-md
                                                 z-10
+                                                disabled:opacity-50
+                                                disabled:cursor-not-allowed
                                             "
                                         >
                                             ×
@@ -265,29 +298,14 @@ function UploadCard() {
 
                         <div className="flex justify-center gap-4 mt-8 flex-wrap">
 
-                            {!isLoggedIn && (
-                                <button
-                                    onClick={handleRemove}
-                                    className="
-                                        px-6
-                                        py-3
-                                        rounded-xl
-                                        bg-red-500
-                                        hover:bg-red-600
-                                        text-white
-                                        transition
-                                    "
-                                >
-                                    Remove
-                                </button>
-                            )}
-
+                            
                             {(!isLoggedIn || selectedImages.length < 3) && (
 
                                 <button
                                     onClick={() =>
                                         document.getElementById("food-label-input").click()
                                     }
+                                    disabled={loading}
                                     className="
                                         px-6
                                         py-3
@@ -296,6 +314,9 @@ function UploadCard() {
                                         border-slate-300
                                         hover:bg-slate-100
                                         transition
+                                        disabled:bg-slate-100
+                                        disabled:text-slate-400
+                                        disabled:cursor-not-allowed
                                     "
                                 >
                                     {isLoggedIn ? "Add Another Image" : "Choose Another"}
@@ -317,9 +338,27 @@ function UploadCard() {
                                 disabled:bg-emerald-400
                             "
                             >
-                                {loading ? "Analyzing..." : "Analyze Label"}
+                                {loading ? (
+                                    <span className="flex items-center gap-2">
+                                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                        Analyzing...
+                                    </span>
+                                ) : (
+                                    "Analyze Label"
+                                )}
                             </button>
                         </div>
+                        {loading && (
+                            <div className="mt-5 text-center">
+                                <p className="text-slate-700 font-medium">
+                                    {loadingMessage}
+                                </p>
+
+                                <p className="text-sm text-slate-500 mt-1">
+                                    This may take a minute. Please don't close or refresh the page.
+                                </p>
+                            </div>
+                        )}
 
                     </div>
 

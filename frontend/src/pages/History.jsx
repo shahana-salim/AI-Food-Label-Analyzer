@@ -39,10 +39,15 @@ function History() {
             </h1>
 
             <div className="space-y-4">
-                {history.map((item) => (
-                    <div
-                        key={item.id}
-                        className="
+                {history.length === 0 ? (
+                    <p className="text-slate-500">
+                        No analysis history yet.
+                    </p>
+                ) : (
+                        history.map((item) => (
+                            <div
+                                key={item.id}
+                                className="
                           bg-white
                             rounded-2xl
                             shadow-md
@@ -51,39 +56,39 @@ function History() {
                             gap-6
                             items-center
                         "
-                    >
-                        <img
-                            src={item.image}
-                            alt={item.product_name}
-                            className="
+                            >
+                                <img
+                                    src={item.image}
+                                    alt={item.product_name}
+                                    className="
                                w-32
                                 h-32
                                 object-cover
                                 rounded-xl
                                 shadow
                             "
-                        />
+                                />
 
-                        <div className="flex-1">
+                                <div className="flex-1">
 
-                            <h2 className="text-2xl font-bold text-slate-800">
-                                {item.product_name || "Unknown Product"}
-                            </h2>
+                                    <h2 className="text-2xl font-bold text-slate-800">
+                                        {item.product_name || "Unknown Product"}
+                                    </h2>
 
-                            <p className="text-slate-500 mt-2">
-                                {new Date(item.uploaded_at).toLocaleString("en-IN", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                })}
-                            </p>
-                            <button
-                                onClick={() => navigate(`/history/${item.id}`)}
+                                    <p className="text-slate-500 mt-2">
+                                        {new Date(item.uploaded_at).toLocaleString("en-IN", {
+                                            day: "2-digit",
+                                            month: "short",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        })}
+                                    </p>
+                                    <button
+                                        onClick={() => navigate(`/history/${item.id}`)}
 
-                                disabled={!item.analysis}
-                                className="
+                                        disabled={!item.analysis}
+                                        className="
                                     mt-5
                                     bg-emerald-600
                                     hover:bg-emerald-700
@@ -95,14 +100,15 @@ function History() {
                                      rounded-lg
                                     transition
                         "
-                            >
-                                View Analysis
-                            </button>
+                                    >
+                                        View Analysis
+                                    </button>
 
-                        </div>
+                                </div>
 
-                    </div>
-                ))}
+                            </div>
+                        ))
+                    )}
             </div>
         </div>
     );
