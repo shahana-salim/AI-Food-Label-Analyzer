@@ -28,12 +28,19 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
   const navigate = useNavigate();
   const handleRegister = async () => {
 
     setError("");
     setSuccess("");
 
+    if (!firstName.trim() || !lastName.trim()) {
+      setError("First name and last name are required.");
+      return;
+    }
     if (password.length < 8) {
       setError("Password must be at least 8 characters long.");
       return;
@@ -46,6 +53,8 @@ function Register() {
 
     try {
       await registerUser({
+        first_name: firstName,
+        last_name: lastName,
         email,
         password,
         confirm_password: confirmPassword,
@@ -115,107 +124,129 @@ function Register() {
         </div>
 
         {/* Right Section */}
+        <div className="max-w-md w-full mx-auto">
 
-        <Card>
+          <Card>
 
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
-            Create Account 🌿
-          </h2>
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
+              Create Account 🌿
+            </h2>
 
-          <p className="text-center text-gray-500 mb-8">
-            Join and start analyzing food labels with AI.
-          </p>
-
-          <div className="space-y-5">
-
-            <div className="relative">
-
-              <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
-
-              <Input
-                type="email"
-                placeholder="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-            </div>
-
-            <div className="relative">
-
-              <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
-
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
-
-            </div>
-
-            <div className="relative">
-
-              <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
-
-              <Input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
-
-            </div>
-
-            {error && (
-              <div className="bg-red-100 border border-red-300 text-red-700 rounded-lg p-3 text-sm">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg p-3 text-sm">
-                {success}
-              </div>
-            )}
-
-            <Button onClick={handleRegister}>
-              Register
-            </Button>
-
-            <p className="text-center text-gray-500">
-
-              Already have an account?{" "}
-
-              <Link
-                to="/login"
-                className="text-emerald-600 font-semibold hover:underline"
-              >
-                Login
-              </Link>
-
+            <p className="text-center text-gray-500 mb-6">
+              Join and start analyzing food labels with AI.
             </p>
 
-          </div>
+            <div className="space-y-4">
+              <div className="relative">
 
-        </Card>
+                <Input
+                  type="text"
+                  placeholder="First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
 
+              </div>
+
+              <div className="relative">
+
+                <Input
+                  type="text"
+                  placeholder="Last Name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+
+              </div>
+
+              <div className="relative">
+
+                <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+
+                <Input
+                  type="email"
+                  placeholder="Email Address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+
+              </div>
+
+              <div className="relative">
+
+                <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+
+              </div>
+
+              <div className="relative">
+
+                <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+
+              </div>
+
+              {error && (
+                <div className="bg-red-100 border border-red-300 text-red-700 rounded-lg p-3 text-sm">
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg p-3 text-sm">
+                  {success}
+                </div>
+              )}
+
+              <Button onClick={handleRegister}>
+                Register
+              </Button>
+
+              <p className="text-center text-gray-500">
+
+                Already have an account?{" "}
+
+                <Link
+                  to="/login"
+                  className="text-emerald-600 font-semibold hover:underline"
+                >
+                  Login
+                </Link>
+
+              </p>
+
+            </div>
+
+          </Card>
+        </div>
       </div>
 
     </div>

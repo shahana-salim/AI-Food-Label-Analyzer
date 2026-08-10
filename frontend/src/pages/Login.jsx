@@ -45,7 +45,11 @@ function Login() {
 
       console.log("Tokens saved successfully");
 
-      navigate("/");
+      if (response.data.is_staff) {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
 
     } catch (error) {
       console.error(error.response?.data || error.message);

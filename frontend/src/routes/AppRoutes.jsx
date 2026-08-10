@@ -11,6 +11,11 @@ import PersonalInformation from "../pages/PersonalInformation";
 import HealthPreferences from "../pages/HealthPreferences";
 import Security from "../pages/Security";
 
+import AdminLayout from "../components/AdminLayout";
+import AdminDashboard from "../pages/AdminDashboard";
+import AdminUsers from "../pages/AdminUsers";
+import AdminAnalyses from "../pages/AdminAnalyses";
+
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -72,6 +77,27 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        {/* Admin Routes */}
+
+        <Route path="/admin" element={<AdminLayout />}>
+
+          <Route
+            index
+            element={<AdminDashboard />}
+          />
+
+          <Route
+            path="users"
+            element={<AdminUsers />}
+          />
+
+          <Route
+            path="analyses"
+            element={<AdminAnalyses />}
+          />
+
+        </Route>
       </Routes>
 
     </BrowserRouter>
