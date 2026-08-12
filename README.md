@@ -19,10 +19,9 @@ An AI-powered web application that extracts and analyzes information from packag
 
 ### AI
 - EasyOCR
-- Natural Language Processing (NLP)
 - LLM API
 
 ## Developed By
 Shahana Salim
 
-MCA Major Project
+MCA Mini Project

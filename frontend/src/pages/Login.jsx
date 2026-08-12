@@ -24,12 +24,29 @@ function Login() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
   const handleLogin = async () => {
     setError("");
+
+    // Email validation
+    if (!email.trim()) {
+      setError("Email is required.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    // Password validation
+    if (!password) {
+      setError("Password is required.");
+      return;
+    }
+
     try {
       const response = await loginUser({
-        email,
+        email: email.trim(),
         password,
       });
 
@@ -53,6 +70,8 @@ function Login() {
 
     } catch (error) {
       console.error(error.response?.data || error.message);
+
+      // Keep login error generic for security
       setError("Invalid email or password.");
     }
   };

@@ -1,22 +1,66 @@
-
 import Sidebar from "../components/Sidebar";
 import HeroCard from "../components/HeroCard";
 import StatCard from "../components/StatCard";
 import UploadCard from "../components/UploadCard";
 
+
+import { useEffect, useState } from "react";
+
+import api from "../services/api";
+
 import {
-    FaUpload,
     FaFlask,
-    FaLeaf,
 } from "react-icons/fa";
 
 function Dashboard() {
+    const isLoggedIn = !!localStorage.getItem("access_token");
+
+    const [totalAnalyses, setTotalAnalyses] = useState(0);
 
     const handleLogout = () => {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         window.location.href = "/";
     };
+    useEffect(() => {
+
+        const fetchAnalysisCount = async () => {
+
+            if (!isLoggedIn) {
+                return;
+            }
+
+            try {
+
+                const token = localStorage.getItem("access_token");
+
+                const response = await api.get(
+                    "my-analysis-count/",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                setTotalAnalyses(
+                    response.data.total_analyses
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to fetch analysis count:",
+                    error
+                );
+
+            }
+
+        };
+
+        fetchAnalysisCount();
+
+    }, []);
 
     return (
 
@@ -27,31 +71,23 @@ function Dashboard() {
             <main className="flex-1 p-8">
 
                 <HeroCard />
+
                 <UploadCard />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
 
-                    <StatCard
-                        title="Uploads"
-                        value="0"
-                        subtitle="Total uploaded labels"
-                        icon={<FaUpload className="text-emerald-600" />}
-                    />
+                {isLoggedIn && (
+                    <div className="mt-8">
 
-                    <StatCard
-                        title="Analyses"
-                        value="0"
-                        subtitle="Completed analyses"
-                        icon={<FaFlask className="text-blue-600" />}
-                    />
+                        <StatCard
+                            title="Total Analyses"
+                            value={totalAnalyses}
+                            subtitle="Completed analyses"
+                            icon={
+                                <FaFlask className="text-blue-600" />
+                            }
+                        />
 
-                    <StatCard
-                        title="Safe Foods"
-                        value="0"
-                        subtitle="Healthy products"
-                        icon={<FaLeaf className="text-green-600" />}
-                    />
-
-                </div>
+                    </div>
+                )}
 
             </main>
 

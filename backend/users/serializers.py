@@ -25,30 +25,114 @@ class RegisterSerializer(serializers.ModelSerializer):
             },
             'last_name': {
                 'required': True
+            },
+            'email': {
+                'required': True
             }
         }
 
     def validate(self, data):
-        # Check whether both passwords match
-        if data['password'] != data['confirm_password']:
+
+        first_name = data.get('first_name', '').strip()
+        last_name = data.get('last_name', '').strip()
+        email = data.get('email', '').strip()
+        password = data.get('password', '')
+        confirm_password = data.get('confirm_password', '')
+
+        # First name validation
+        if not first_name:
             raise serializers.ValidationError(
-                {"password": "Passwords do not match."}
-            )
-        if len(data['password']) < 8:
-            raise serializers.ValidationError(
-                {"password": "Password must be at least 8 characters long."}
+                {"first_name": "First name is required."}
             )
 
-        # Check whether the email already exists
-        if User.objects.filter(email=data['email']).exists():
+        if len(first_name) < 2:
+            raise serializers.ValidationError(
+                {"first_name": "First name must be at least 2 characters long."}
+            )
+
+        if not first_name.replace(" ", "").isalpha():
+            raise serializers.ValidationError(
+                {"first_name": "First name can contain only letters and spaces."}
+            )
+
+        # Last name validation
+        if not last_name:
+            raise serializers.ValidationError(
+                {"last_name": "Last name is required."}
+            )
+
+        if len(last_name) < 2:
+            raise serializers.ValidationError(
+                {"last_name": "Last name must be at least 2 characters long."}
+            )
+
+        if not last_name.replace(" ", "").isalpha():
+            raise serializers.ValidationError(
+                {"last_name": "Last name can contain only letters and spaces."}
+            )
+
+        # Email validation
+        if not email:
+            raise serializers.ValidationError(
+                {"email": "Email is required."}
+            )
+
+        # Check whether email already exists
+        if User.objects.filter(email__iexact=email).exists():
             raise serializers.ValidationError(
                 {"email": "Email is already registered."}
             )
 
+        # Password validation
+        if not password:
+            raise serializers.ValidationError(
+                {"password": "Password is required."}
+            )
+
+        if len(password) < 8:
+            raise serializers.ValidationError(
+                {"password": "Password must be at least 8 characters long."}
+            )
+
+        if not any(char.isupper() for char in password):
+            raise serializers.ValidationError(
+                {"password": "Password must contain at least one uppercase letter."}
+            )
+
+        if not any(char.islower() for char in password):
+            raise serializers.ValidationError(
+                {"password": "Password must contain at least one lowercase letter."}
+            )
+
+        if not any(char.isdigit() for char in password):
+            raise serializers.ValidationError(
+                {"password": "Password must contain at least one number."}
+            )
+
+        if not any(not char.isalnum() for char in password):
+            raise serializers.ValidationError(
+                {"password": "Password must contain at least one special character."}
+            )
+
+        # Confirm password validation
+        if not confirm_password:
+            raise serializers.ValidationError(
+                {"confirm_password": "Please confirm your password."}
+            )
+
+        if password != confirm_password:
+            raise serializers.ValidationError(
+                {"password": "Passwords do not match."}
+            )
+
+        # Store cleaned values
+        data['first_name'] = first_name
+        data['last_name'] = last_name
+        data['email'] = email
+
         return data
 
     def create(self, validated_data):
-        # Remove confirm_password as it is not a database field
         validated_data.pop('confirm_password')
 
         email = validated_data['email']
@@ -57,8 +141,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=email,
             email=email,
             password=validated_data['password'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', '')
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name']
         )
 
         return user

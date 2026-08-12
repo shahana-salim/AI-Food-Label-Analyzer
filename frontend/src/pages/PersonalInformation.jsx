@@ -10,6 +10,14 @@ function PersonalInformation() {
         first_name: "",
         last_name: "",
     });
+
+    const [savedProfile, setSavedProfile] = useState({
+        username: "",
+        email: "",
+        first_name: "",
+        last_name: "",
+    });
+
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -22,6 +30,7 @@ function PersonalInformation() {
                 });
 
                 setProfile(response.data);
+                setSavedProfile(response.data);
 
             } catch (error) {
                 console.error(error);
@@ -35,6 +44,32 @@ function PersonalInformation() {
         return <p className="p-8">Loading...</p>;
     }
     const handleSave = async () => {
+        const nameRegex = /^[A-Za-z ]+$/;
+
+        if (!profile.first_name.trim()) {
+            alert("First name is required.");
+            setProfile(savedProfile);
+            return;
+        }
+
+        if (!nameRegex.test(profile.first_name.trim())) {
+            alert("First name can contain only alphabets and spaces.");
+            setProfile(savedProfile);
+            return;
+        }
+
+        if (!profile.last_name.trim()) {
+            alert("Last name is required.");
+            setProfile(savedProfile);
+            return;
+        }
+
+        if (!nameRegex.test(profile.last_name.trim())) {
+            alert("Last name can contain only alphabets and spaces.");
+            setProfile(savedProfile);
+            return;
+        }
+
         try {
             const token = localStorage.getItem("access_token");
 
@@ -45,12 +80,14 @@ function PersonalInformation() {
             });
 
             setProfile(response.data);
+            setSavedProfile(response.data);
 
             alert("Profile updated successfully!");
 
         } catch (error) {
             console.error(error);
             alert("Failed to update profile.");
+            setProfile(savedProfile);
         }
     };
     return (

@@ -37,12 +37,83 @@ function Register() {
     setError("");
     setSuccess("");
 
-    if (!firstName.trim() || !lastName.trim()) {
-      setError("First name and last name are required.");
+    // First Name validation
+    if (!firstName.trim()) {
+      setError("First name is required.");
       return;
     }
+
+    if (firstName.trim().length < 2) {
+      setError("First name must be at least 2 characters long.");
+      return;
+    }
+
+    if (!/^[A-Za-z\s]+$/.test(firstName.trim())) {
+      setError("First name can contain only letters and spaces.");
+      return;
+    }
+
+    // Last Name validation
+    if (!lastName.trim()) {
+      setError("Last name is required.");
+      return;
+    }
+
+    if (lastName.trim().length < 2) {
+      setError("Last name must be at least 2 characters long.");
+      return;
+    }
+
+    if (!/^[A-Za-z\s]+$/.test(lastName.trim())) {
+      setError("Last name can contain only letters and spaces.");
+      return;
+    }
+
+    // Email validation
+    if (!email.trim()) {
+      setError("Email is required.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    // Password validation
+    if (!password) {
+      setError("Password is required.");
+      return;
+    }
+
     if (password.length < 8) {
       setError("Password must be at least 8 characters long.");
+      return;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      setError("Password must contain at least one uppercase letter.");
+      return;
+    }
+
+    if (!/[a-z]/.test(password)) {
+      setError("Password must contain at least one lowercase letter.");
+      return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      setError("Password must contain at least one number.");
+      return;
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      setError("Password must contain at least one special character.");
+      return;
+    }
+
+    // Confirm Password validation
+    if (!confirmPassword) {
+      setError("Please confirm your password.");
       return;
     }
 
@@ -52,10 +123,11 @@ function Register() {
     }
 
     try {
+
       await registerUser({
-        first_name: firstName,
-        last_name: lastName,
-        email,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: email.trim(),
         password,
         confirm_password: confirmPassword,
       });
@@ -70,7 +142,25 @@ function Register() {
 
       console.error(error.response?.data || error.message);
 
-      setError("Registration failed.");
+      const backendError = error.response?.data;
+
+      if (backendError?.email) {
+        setError(
+          Array.isArray(backendError.email)
+            ? backendError.email[0]
+            : backendError.email
+        );
+      } else if (backendError?.password) {
+        setError(
+          Array.isArray(backendError.password)
+            ? backendError.password[0]
+            : backendError.password
+        );
+      } else if (backendError?.detail) {
+        setError(backendError.detail);
+      } else {
+        setError("Registration failed. Please try again.");
+      }
     }
   };
 
