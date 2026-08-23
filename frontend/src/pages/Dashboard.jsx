@@ -60,7 +60,7 @@ function Dashboard() {
 
         fetchAnalysisCount();
 
-    }, []);
+    }, [isLoggedIn]);
 
     return (
 

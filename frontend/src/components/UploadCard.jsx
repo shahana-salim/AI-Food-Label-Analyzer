@@ -12,6 +12,7 @@ function UploadCard() {
         "Reading your food label..."
     );
     const [error, setError] = useState("");
+    const [isDragging, setIsDragging] = useState(false);
     useEffect(() => {
 
         if (!loading) return;
@@ -68,7 +69,22 @@ function UploadCard() {
             updatedImages.map(file => URL.createObjectURL(file))
         );
     };
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
 
+        const files = Array.from(e.dataTransfer.files);
+
+        if (files.length === 0) {
+            return;
+        }
+
+        handleFileChange({
+            target: {
+                files: files,
+            },
+        });
+    };
     const removeImage = (index) => {
 
         const updatedImages = selectedImages.filter(
@@ -139,7 +155,7 @@ function UploadCard() {
     };
     return (
         <>
-            <div className="bg-white rounded-2xl shadow-md p-8 mt-8">
+            <div className="bg-white rounded-2xl shadow-md p-8 mt-8" >
 
                 <div className="text-center">
 
@@ -175,7 +191,8 @@ function UploadCard() {
 
                 {previews.length === 0 ? (
 
-                    <div
+                    <div onDragOver={(e) => e.preventDefault()}
+                        onDrop={handleDrop}
                         className="
                        mt-8
                        border-2
@@ -298,7 +315,7 @@ function UploadCard() {
 
                         <div className="flex justify-center gap-4 mt-8 flex-wrap">
 
-                            
+
                             {(!isLoggedIn || selectedImages.length < 3) && (
 
                                 <button

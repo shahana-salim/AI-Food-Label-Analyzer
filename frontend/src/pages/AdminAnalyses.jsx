@@ -7,6 +7,8 @@ function AdminAnalyses() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedAnalysis, setSelectedAnalysis] = useState(null);
+    const [selectedUser, setSelectedUser] = useState("all");
+    const [selectedDate, setSelectedDate] = useState("all");
 
     useEffect(() => {
         const fetchAnalyses = async () => {
@@ -40,6 +42,71 @@ function AdminAnalyses() {
         return new Date(date).toLocaleString();
     };
 
+    const filteredAnalyses = analyses.filter((item) => {
+
+        // User filter
+        if (selectedUser !== "all") {
+
+            if (selectedUser === "guest") {
+                if (item.user_email !== "Guest") {
+                    return false;
+                }
+            } if (selectedUser === "registered") {
+                if (!item.user_email || item.user_email === "Guest") {
+                    return false;
+                }
+            }
+        }
+
+        // Date filter
+        if (selectedDate !== "all") {
+
+            const analysisDate = new Date(item.uploaded_at);
+            const now = new Date();
+
+            if (selectedDate === "today") {
+
+                const startOfDay = new Date();
+                startOfDay.setHours(0, 0, 0, 0);
+
+                if (analysisDate < startOfDay) {
+                    return false;
+                }
+            }
+
+            if (selectedDate === "week") {
+
+                const startOfWeek = new Date();
+                const day = startOfWeek.getDay();
+
+                startOfWeek.setDate(
+                    startOfWeek.getDate() - day
+                );
+
+                startOfWeek.setHours(0, 0, 0, 0);
+
+                if (analysisDate < startOfWeek) {
+                    return false;
+                }
+            }
+
+            if (selectedDate === "month") {
+
+                const startOfMonth = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    1
+                );
+
+                if (analysisDate < startOfMonth) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    });
+
     return (
         <div className="p-8">
 
@@ -62,6 +129,83 @@ function AdminAnalyses() {
             {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4">
                     {error}
+                </div>
+            )}
+
+            {!loading && !error && analyses.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+
+                    <div className="grid md:grid-cols-2 gap-4">
+
+                        {/* User Filter */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-600 mb-2">
+                                Filter by User
+                            </label>
+
+                            <select
+                                value={selectedUser}
+                                onChange={(e) => setSelectedUser(e.target.value)}
+                                className="
+                        w-full
+                        border
+                        border-slate-300
+                        rounded-lg
+                        px-4
+                        py-3
+                        text-slate-700
+                        bg-white
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-emerald-500
+                    "
+                            >
+                                <option value="all">
+                                    All Users
+                                </option>
+
+                                <option value="guest">
+                                    Guest
+                                </option>
+
+                                <option value="registered">
+                                    Registered Users
+                                </option>
+                            </select>
+                        </div>
+
+                        {/* Date Filter */}
+                        <div>
+                            <label className="block text-sm font-medium text-slate-600 mb-2">
+                                Filter by Date
+                            </label>
+
+                            <select
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className="
+                        w-full
+                        border
+                        border-slate-300
+                        rounded-lg
+                        px-4
+                        py-3
+                        text-slate-700
+                        bg-white
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-emerald-500
+                    "
+                            >
+                                <option value="all">All Time</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                            </select>
+                        </div>
+
+                    </div>
+
                 </div>
             )}
 
@@ -102,7 +246,7 @@ function AdminAnalyses() {
 
                             <tbody className="divide-y">
 
-                                {analyses.map((item) => (
+                                {filteredAnalyses.map((item) => (
 
                                     <tr
                                         key={item.id}
@@ -161,6 +305,13 @@ function AdminAnalyses() {
 
                     </div>
 
+                </div>
+            )}
+            {!loading && !error && filteredAnalyses.length === 0 && analyses.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+                    <p className="text-slate-500">
+                        No analyses match the selected filters.
+                    </p>
                 </div>
             )}
 
@@ -241,7 +392,7 @@ function AdminAnalyses() {
 
                         </div>
 
-                      <AnalysisResult analysis={selectedAnalysis.analysis} />
+                        <AnalysisResult analysis={selectedAnalysis.analysis} />
 
                     </div>
 

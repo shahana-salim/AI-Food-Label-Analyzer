@@ -9,7 +9,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from .models import FoodLabel
 
 from .utils import extract_text_from_image, clean_extracted_text
-from .ai_service import analyze_food_label
+from .ai_service import analyze_food_label,analyze_food_label_direct
 from rest_framework.permissions import IsAdminUser
 
 from .models import FoodLabel
@@ -172,3 +172,49 @@ class AdminFoodLabelListView(ListAPIView):
 
     def get_queryset(self):
         return FoodLabel.objects.all().order_by("-uploaded_at")
+    
+
+
+class DirectGeminiAnalysisView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        images = request.FILES.getlist("images")
+
+        if not images:
+            return Response(
+                {"error": "Please upload at least one image."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        print(f"\nDirect Gemini Analysis")
+        print(f"Images received: {len(images)}")
+
+        start_time = time.perf_counter()
+
+        analysis = analyze_food_label_direct(
+            images=images,
+            user=request.user
+        )
+
+        end_time = time.perf_counter()
+
+        analysis_time = end_time - start_time
+
+        print(f"Gemini analysis time: {analysis_time:.2f} seconds\n")
+
+        if "error" in analysis:
+            return Response(
+                analysis,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            {
+                "analysis": analysis,
+                "analysis_time": round(analysis_time, 2),
+                "images_analyzed": len(images),
+            },
+            status=status.HTTP_200_OK,
+        )
