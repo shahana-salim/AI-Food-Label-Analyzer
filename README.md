@@ -1,7 +1,7 @@
 # AI-Powered Food Label Interpretation and Ingredient Analysis
 
 ## Description
-An AI-powered web application that extracts and analyzes information from packaged food labels using OCR and Artificial Intelligence. The system helps users understand ingredients, detect allergens and additives, compare food products, and make informed purchasing decisions.
+An AI-powered web application that extracts and analyzes information from packaged food labels using Artificial Intelligence. The system helps users understand ingredients, detect allergens and additives, compare food products, and make informed purchasing decisions.
 
 ## Technology Stack
 
@@ -18,7 +18,6 @@ An AI-powered web application that extracts and analyzes information from packag
 - PostgreSQL
 
 ### AI
-- EasyOCR
 - LLM API
 
 ## Developed By

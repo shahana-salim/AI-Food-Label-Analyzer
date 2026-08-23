@@ -16,7 +16,6 @@ import AdminDashboard from "../pages/AdminDashboard";
 import AdminUsers from "../pages/AdminUsers";
 import AdminAnalyses from "../pages/AdminAnalyses";
 
-import DirectGemini from "../pages/DirectGemini";
 
 function AppRoutes() {
   return (
@@ -47,15 +46,6 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
-        <Route
-  path="/direct-gemini"
-  element={
-    <ProtectedRoute>
-      <DirectGemini />
-    </ProtectedRoute>
-  }
-/>
         <Route
           path="/profile"
           element={

@@ -7,9 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from .models import FoodLabel
-
-from .utils import extract_text_from_image, clean_extracted_text
-from .ai_service import analyze_food_label,analyze_food_label_direct
+from .ai_service import analyze_food_label
 from rest_framework.permissions import IsAdminUser
 
 from .models import FoodLabel
@@ -40,34 +38,15 @@ class FoodLabelUploadView(APIView):
 
         if serializer.is_valid():
 
-            # -------------------------
-            # OCR PROCESSING
-            # -------------------------
-
-            ocr_start = time.time()
-
-            combined_text = ""
-
-            for image in images:
-
-                ocr_text = extract_text_from_image(image)
-
-                clean_text = clean_extracted_text(ocr_text)
-
-                combined_text += clean_text + "\n\n"
-
-            print("OCR TIME:", time.time() - ocr_start)
-
-            # -------------------------
-            # AI ANALYSIS
-            # -------------------------
+           # -------------------------
+           # AI ANALYSIS
+           # -------------------------
 
             gemini_start = time.time()
 
             analysis = analyze_food_label(
-                combined_text,
-                request.user,
-                images,
+                user=request.user,
+                images=images,
             )
 
             print("GEMINI TIME:", time.time() - gemini_start)
@@ -108,7 +87,6 @@ class FoodLabelUploadView(APIView):
                 {
                     "message": "Food label uploaded successfully.",
                     "data": FoodLabelSerializer(food_label).data,
-                    "extracted_text": combined_text,
                     "analysis": analysis,
                 },
                 status=status.HTTP_201_CREATED,
@@ -118,8 +96,6 @@ class FoodLabelUploadView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST,
         )
-
-
 class FoodLabelHistoryView(ListAPIView):
     serializer_class = FoodLabelHistorySerializer
     permission_classes = [IsAuthenticated]
@@ -174,47 +150,3 @@ class AdminFoodLabelListView(ListAPIView):
         return FoodLabel.objects.all().order_by("-uploaded_at")
     
 
-
-class DirectGeminiAnalysisView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-
-        images = request.FILES.getlist("images")
-
-        if not images:
-            return Response(
-                {"error": "Please upload at least one image."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        print(f"\nDirect Gemini Analysis")
-        print(f"Images received: {len(images)}")
-
-        start_time = time.perf_counter()
-
-        analysis = analyze_food_label_direct(
-            images=images,
-            user=request.user
-        )
-
-        end_time = time.perf_counter()
-
-        analysis_time = end_time - start_time
-
-        print(f"Gemini analysis time: {analysis_time:.2f} seconds\n")
-
-        if "error" in analysis:
-            return Response(
-                analysis,
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        return Response(
-            {
-                "analysis": analysis,
-                "analysis_time": round(analysis_time, 2),
-                "images_analyzed": len(images),
-            },
-            status=status.HTTP_200_OK,
-        )
