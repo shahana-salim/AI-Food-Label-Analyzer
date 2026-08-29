@@ -98,8 +98,11 @@ Return this JSON format:
 ],
 "allergens": [],
 "nutrition_summary": "",
-"health_concerns": [],
-"recommendations": []
+"personalized_assessment": {{
+    "status": "",
+    "summary": "",
+    "issues": [],
+    "recommendations": []
 }}
 
 For product_name:
@@ -176,16 +179,52 @@ For nutrition information:
 - Do not replace numerical nutrition information with general descriptions such as "high in sugar" when numerical values are clearly visible.
 - If a nutrition value is not available or cannot be clearly read, return "Not Available".
 
-For recommendations:
+For personalized_assessment:
 
-- Provide practical advice based on the product, nutritional information, and the user's health preferences.
-- If the product contains an allergen listed in the user's health preferences, clearly warn the user.
-- When a product contains ingredients that match the user's recorded allergies, use wording similar to:
-  "This product contains Wheat and Tomato Powder, both of which match your recorded allergies."
+- Evaluate the product specifically for the current user based on their recorded health preferences.
+- Consider ALL relevant information from the user's profile:
+  - Known allergies
+  - Other allergy
+  - Medical conditions
+  - Other medical condition
+  - Dietary preference
+
+- Compare the product's ingredients, additives, allergens, and nutrition information against the user's health preferences.
+
+- The status must be exactly one of:
+  "Suitable"
+  "Caution"
+  "Not Recommended"
+
+- "Not Recommended" should be used when the product has a clear conflict with a recorded allergy or a significant conflict with a medical condition or dietary preference.
+
+- "Caution" should be used when the product may not be ideal for the user but there is no clear reason to completely avoid it.
+
+- "Suitable" should be used when no relevant conflict is identified based on the available label information.
+
+- Provide a short summary explaining the overall suitability of the product for this particular user.
+
+- In "issues", list only the health or dietary issues that are relevant to this user and this product.
+
+- In "recommendations", provide practical actions specifically relevant to this user.
+
+- If a recorded allergy is present in the product, clearly mention the conflict in the issues and recommendations.
+
 - If the product conflicts with the user's dietary preference, mention the conflict.
-- If the nutritional content or ingredients may not be suitable for any of the user's medical conditions, briefly explain why.
-- If there are no conflicts with the user's health preferences, mention that it appears suitable based on the available information.
-- Keep each recommendation short and easy to understand.
+
+- If the nutritional content or ingredients may be unsuitable for one of the user's medical conditions, briefly explain the relevant concern.
+
+- Do not mention a health preference unless it is relevant to this product.
+
+- If there are no relevant conflicts, state that no significant conflicts were identified based on the available information.
+
+- Do not diagnose medical conditions or provide medical treatment advice.
+
+- Base the assessment only on information supported by the uploaded images and the user's recorded profile.
+
+- Keep the summary, issues, and recommendations concise and easy to understand.
+
+
 
 Keep all descriptions concise (1–2 sentences).
 """
