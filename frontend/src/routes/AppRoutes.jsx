@@ -10,6 +10,7 @@ import Profile from "../pages/Profile";
 import PersonalInformation from "../pages/PersonalInformation";
 import HealthPreferences from "../pages/HealthPreferences";
 import Security from "../pages/Security";
+import Compare from "../pages/Compare";
 
 import AdminLayout from "../components/AdminLayout";
 import AdminDashboard from "../pages/AdminDashboard";
@@ -43,6 +44,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <AnalysisDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/compare"
+          element={
+            <ProtectedRoute>
+              <Compare />
             </ProtectedRoute>
           }
         />
@@ -99,8 +108,8 @@ function AppRoutes() {
           />
         </Route>
 
-    </Routes>
-       
+      </Routes>
+
 
     </BrowserRouter >
   );
