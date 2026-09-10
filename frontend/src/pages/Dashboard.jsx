@@ -10,6 +10,7 @@ import api from "../services/api";
 
 import {
     FaFlask,
+    FaBalanceScale,
 } from "react-icons/fa";
 
 function Dashboard() {
@@ -73,6 +74,88 @@ function Dashboard() {
                 <HeroCard />
 
                 <UploadCard />
+                <div className="mt-8">
+
+                    <div className="
+        bg-white
+        rounded-2xl
+        shadow-md
+        p-6
+        flex
+        flex-col
+        md:flex-row
+        md:items-center
+        md:justify-between
+        gap-5
+    ">
+
+                        <div className="flex items-start gap-4">
+
+                            <div className="
+                w-12
+                h-12
+                rounded-xl
+                bg-violet-100
+                flex
+                items-center
+                justify-center
+                flex-shrink-0
+            ">
+                                <FaBalanceScale className="
+                    text-violet-600
+                    text-xl
+                " />
+                            </div>
+
+                            <div>
+
+                                <h2 className="
+                    text-xl
+                    font-bold
+                    text-slate-800
+                ">
+                                    Compare Products
+                                </h2>
+
+                                <p className="
+                    text-slate-500
+                    mt-1
+                    text-sm
+                    max-w-xl
+                ">
+                                    Compare two food products and find
+                                    which one is more suitable for you
+                                    based on your health and dietary
+                                    preferences.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                window.location.href = "/compare";
+                            }}
+                            className="
+                bg-violet-600
+                hover:bg-violet-700
+                text-white
+                px-6
+                py-3
+                rounded-xl
+                font-semibold
+                transition
+                whitespace-nowrap
+            "
+                        >
+                            Compare Products →
+                        </button>
+
+                    </div>
+
+                </div>
 
                 {isLoggedIn && (
                     <div className="mt-8">

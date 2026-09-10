@@ -4,15 +4,23 @@ import Breadcrumb from "../components/Breadcrumb";
 
 
 const getStatusClass = (status) => {
+
     if (status === "Suitable") {
+
         return "bg-emerald-100 text-emerald-700";
+
     }
+
 
     if (status === "Caution") {
+
         return "bg-amber-100 text-amber-700";
+
     }
 
+
     return "bg-red-100 text-red-700";
+
 };
 
 
@@ -52,7 +60,9 @@ function Compare() {
 
 
         if (!file) {
+
             return;
+
         }
 
 
@@ -63,6 +73,7 @@ function Compare() {
             );
 
             return;
+
         }
 
 
@@ -71,17 +82,20 @@ function Compare() {
 
 
         setComparison(null);
+
         setError("");
 
 
         if (productNumber === 1) {
 
             setProduct1Image(file);
+
             setProduct1Preview(previewUrl);
 
         } else {
 
             setProduct2Image(file);
+
             setProduct2Preview(previewUrl);
 
         }
@@ -92,17 +106,20 @@ function Compare() {
     const removeImage = (productNumber) => {
 
         setComparison(null);
+
         setError("");
 
 
         if (productNumber === 1) {
 
             setProduct1Image(null);
+
             setProduct1Preview(null);
 
         } else {
 
             setProduct2Image(null);
+
             setProduct2Preview(null);
 
         }
@@ -119,13 +136,16 @@ function Compare() {
             );
 
             return;
+
         }
 
 
         try {
 
             setLoading(true);
+
             setError("");
+
             setComparison(null);
 
 
@@ -241,10 +261,10 @@ function Compare() {
 
                 type: "winner",
 
-                product: product1,
+                product: "Product 1",
 
                 message:
-                    `${product1.product_name || "Product 1"} has a more favorable personalized suitability assessment than ${product2.product_name || "Product 2"}.`,
+                    "Product 1 has a more favorable personalized suitability assessment than Product 2.",
 
             };
 
@@ -257,10 +277,10 @@ function Compare() {
 
                 type: "winner",
 
-                product: product2,
+                product: "Product 2",
 
                 message:
-                    `${product2.product_name || "Product 2"} has a more favorable personalized suitability assessment than ${product1.product_name || "Product 2"}.`,
+                    "Product 2 has a more favorable personalized suitability assessment than Product 1.",
 
             };
 
@@ -300,9 +320,14 @@ function Compare() {
         if (!issues.length) {
 
             return (
-                <p className="text-sm text-slate-500">
+
+                <p className="
+                    text-sm
+                    text-slate-500
+                ">
                     No specific concerns identified.
                 </p>
+
             );
 
         }
@@ -328,7 +353,9 @@ function Compare() {
                             "
                         >
 
-                            <span className="text-red-500">
+                            <span className="
+                                text-red-500
+                            ">
                                 •
                             </span>
 
@@ -386,9 +413,13 @@ function Compare() {
 
 
         return (
-            <p className="text-slate-500">
+
+            <p className="
+                text-slate-500
+            ">
                 None listed
             </p>
+
         );
 
     };
@@ -972,12 +1003,7 @@ function Compare() {
                                         text-emerald-700
                                         mt-4
                                     ">
-                                        {
-                                            comparisonSummary
-                                                .product
-                                                .product_name ||
-                                            "Product"
-                                        }
+                                        {comparisonSummary.product}
                                     </p>
 
 
@@ -1000,23 +1026,26 @@ function Compare() {
                                     ">
 
                                         {[
+                                            {
+                                                label: "Product 1",
+                                                product:
+                                                    comparison.product1,
+                                            },
 
-                                            comparison.product1,
-
-                                            comparison.product2,
+                                            {
+                                                label: "Product 2",
+                                                product:
+                                                    comparison.product2,
+                                            },
 
                                         ].map(
-                                            (
-                                                product
-                                            ) => (
+                                            ({
+                                                label,
+                                                product,
+                                            }) => (
 
                                                 <div
-                                                    key={
-                                                        product
-                                                            .id ||
-                                                        product
-                                                            .product_name
-                                                    }
+                                                    key={label}
                                                     className="
                                                         bg-slate-50
                                                         rounded-xl
@@ -1028,11 +1057,7 @@ function Compare() {
                                                         font-semibold
                                                         text-slate-800
                                                     ">
-                                                        {
-                                                            product
-                                                                .product_name ||
-                                                            "Product"
-                                                        }
+                                                        {label}
                                                     </p>
 
 
@@ -1096,23 +1121,26 @@ function Compare() {
                                         ">
 
                                             {[
+                                                {
+                                                    label: "Product 1",
+                                                    product:
+                                                        comparison.product1,
+                                                },
 
-                                                comparison.product1,
-
-                                                comparison.product2,
+                                                {
+                                                    label: "Product 2",
+                                                    product:
+                                                        comparison.product2,
+                                                },
 
                                             ].map(
-                                                (
-                                                    product
-                                                ) => (
+                                                ({
+                                                    label,
+                                                    product,
+                                                }) => (
 
                                                     <div
-                                                        key={
-                                                            product
-                                                                .id ||
-                                                            product
-                                                                .product_name
-                                                        }
+                                                        key={label}
                                                         className="
                                                             bg-slate-50
                                                             rounded-xl
@@ -1131,11 +1159,7 @@ function Compare() {
                                                                 font-semibold
                                                                 text-slate-800
                                                             ">
-                                                                {
-                                                                    product
-                                                                        .product_name ||
-                                                                    "Product"
-                                                                }
+                                                                {label}
                                                             </h4>
 
 
@@ -1231,11 +1255,7 @@ function Compare() {
                                     text-slate-800
                                     mb-4
                                 ">
-                                    {
-                                        comparison.product1
-                                            .product_name ||
-                                        "Product 1"
-                                    }
+                                    Product 1
                                 </h4>
 
 
@@ -1261,11 +1281,7 @@ function Compare() {
                                     text-slate-800
                                     mb-4
                                 ">
-                                    {
-                                        comparison.product2
-                                            .product_name ||
-                                        "Product 2"
-                                    }
+                                    Product 2
                                 </h4>
 
 
@@ -1317,11 +1333,7 @@ function Compare() {
                                         text-slate-800
                                         mb-4
                                     ">
-                                        {
-                                            comparison.product1
-                                                .product_name ||
-                                            "Product 1"
-                                        }
+                                        Product 1
                                     </h4>
 
 
@@ -1350,11 +1362,7 @@ function Compare() {
                                         text-slate-800
                                         mb-4
                                     ">
-                                        {
-                                            comparison.product2
-                                                .product_name ||
-                                            "Product 2"
-                                        }
+                                        Product 2
                                     </h4>
 
 

@@ -13,11 +13,11 @@ function HeroCard() {
                 <div>
 
                     <h1 className="text-4xl font-bold">
-                       Welcome to AI Food Label Analyzer
+                      Make Smarter Food Choices with AI
                     </h1>
 
                     <p className="text-emerald-100 mt-2 text-lg">
-                        Analyze packaged food labels with AI-powered insights.
+                       Analyze food labels and get personalized insights based on your health and dietary preferences.
                     </p>
 
                 </div>
@@ -38,7 +38,7 @@ function HeroCard() {
 
                     <FaCheckCircle className="text-xl" />
 
-                    <span>Nutrition Analysis</span>
+                    <span>Personalized Health Insights</span>
 
                 </div>
 
@@ -46,7 +46,7 @@ function HeroCard() {
 
                     <FaCheckCircle className="text-xl" />
 
-                    <span>Allergen Detection</span>
+                    <span>Compare Food Products</span>
 
                 </div>
                 

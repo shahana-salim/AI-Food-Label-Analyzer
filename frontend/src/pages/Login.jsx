@@ -96,8 +96,7 @@ function Login() {
 
           <p className="text-xl text-gray-600 mb-10 leading-relaxed">
 
-            Understand what you eat with AI-powered food label
-            analysis.
+           Understand what you eat with AI-powered, personalized food label analysis
 
           </p>
 
@@ -105,12 +104,12 @@ function Login() {
 
             <div className="flex items-center gap-3">
               <FaCheckCircle className="text-emerald-600" />
-              <span>Analyze ingredients instantly</span>
+              <span>AI-powered ingredient analysis</span>
             </div>
 
             <div className="flex items-center gap-3">
               <FaCheckCircle className="text-emerald-600" />
-              <span>Detect allergens and additives</span>
+              <span>Detect allergens</span>
             </div>
 
             <div className="flex items-center gap-3">
@@ -120,7 +119,7 @@ function Login() {
 
             <div className="flex items-center gap-3">
               <FaCheckCircle className="text-emerald-600" />
-              <span>AI-powered food insights</span>
+              <span>Get Personalized Food Insights</span>
             </div>
 
           </div>

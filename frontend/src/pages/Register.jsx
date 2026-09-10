@@ -184,7 +184,7 @@ function Register() {
           </div>
 
           <p className="text-xl text-gray-600 mb-10 leading-relaxed">
-            Understand what you eat with AI-powered food label analysis.
+            Understand what you eat with AI-powered, personalized food label analysis
           </p>
 
           <div className="space-y-6">
@@ -196,7 +196,7 @@ function Register() {
 
             <div className="flex items-center gap-3">
               <FaCheckCircle className="text-emerald-600" />
-              <span>Detect allergens & food additives</span>
+              <span>Detect allergens</span>
             </div>
 
             <div className="flex items-center gap-3">
@@ -206,7 +206,7 @@ function Register() {
 
             <div className="flex items-center gap-3">
               <FaCheckCircle className="text-emerald-600" />
-              <span>Get healthier food insights</span>
+              <span>Get Personalized Food Insights</span>
             </div>
 
           </div>
