@@ -11,6 +11,7 @@ import PersonalInformation from "../pages/PersonalInformation";
 import HealthPreferences from "../pages/HealthPreferences";
 import Security from "../pages/Security";
 import Compare from "../pages/Compare";
+import ForgotPassword from "../pages/ForgotPassword";
 
 import AdminLayout from "../components/AdminLayout";
 import AdminDashboard from "../pages/AdminDashboard";
@@ -29,6 +30,11 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
+
+        <Route
+          path="/forgot-password"
+          element={<ForgotPassword />}
+        />
 
         {/* Protected History */}
         <Route

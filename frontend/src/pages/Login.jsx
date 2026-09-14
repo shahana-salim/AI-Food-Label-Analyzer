@@ -180,7 +180,14 @@ function Login() {
               </button>
 
             </div>
-
+            <div className="text-left">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-emerald-600 hover:underline font-semibold"
+              >
+                Forgot Password?
+              </Link>
+            </div>
             {error && (
               <div className="bg-red-100 border border-red-300 text-red-700 rounded-lg p-3 text-sm">
                 {error}

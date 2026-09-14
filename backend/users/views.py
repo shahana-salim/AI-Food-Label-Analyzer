@@ -13,6 +13,12 @@ from django.db.models import Count
 from django.contrib.auth.models import User
 from food_analysis.models import FoodLabel
 
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+
 
 @api_view(["GET"])
 def hello_api(request):
@@ -140,6 +146,122 @@ class ChangePasswordView(APIView):
         )
 
 
+class ForgotPasswordView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+
+        email = request.data.get("email")
+
+        if not email:
+            return Response(
+                {"error": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(email=email)
+
+        except User.DoesNotExist:
+            return Response(
+                {"error": "No account found with this email address."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        request.session["password_reset_user_id"] = user.id
+
+        return Response(
+            {
+                "message": "Email verified. You can now reset your password."
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ResetPasswordView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+
+        user_id = request.session.get(
+            "password_reset_user_id"
+        )
+
+        if not user_id:
+            return Response(
+                {"error": "Please verify your email first."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        password = request.data.get("password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not password or not confirm_password:
+            return Response(
+                {"error": "Both password fields are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(password) < 8:
+            return Response(
+                {"error": "Password must be at least 8 characters long."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not any(char.isupper() for char in password):
+            return Response(
+                {"error": "Password must contain at least one uppercase letter."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not any(char.islower() for char in password):
+            return Response(
+                {"error": "Password must contain at least one lowercase letter."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not any(char.isdigit() for char in password):
+            return Response(
+                {"error": "Password must contain at least one number."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not any(char in '!@#$%^&*(),.?":{}|<>' for char in password):
+            return Response(
+                {"error": "Password must contain at least one special character."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if password != confirm_password:
+            return Response(
+                {"error": "Passwords do not match."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = User.objects.get(pk=user_id)
+
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User account not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        user.set_password(password)
+        user.save()
+
+        # Clear reset session after successful password change
+        request.session.pop(
+            "password_reset_user_id",
+            None
+        )
+
+        return Response(
+            {
+                "message": "Password reset successfully."
+            },
+            status=status.HTTP_200_OK,
+        )
 class AdminDashboardView(APIView):
     permission_classes = [IsAdminUser]
 
