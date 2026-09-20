@@ -1,3 +1,4 @@
+
 import {
     FaHome,
     FaHistory,
@@ -5,16 +6,23 @@ import {
     FaSignOutAlt,
     FaSignInAlt,
     FaUserPlus,
+    FaBalanceScale,
 } from "react-icons/fa";
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import api from "../services/api";
 
 function Sidebar({ handleLogout }) {
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
     const navigate = useNavigate();
+    const location = useLocation();
+    const isActive = (path) => {
+        return location.pathname === path;
+    };
 
     useEffect(() => {
 
@@ -51,99 +59,242 @@ function Sidebar({ handleLogout }) {
         checkAuth();
 
     }, []);
+
     return (
-        <aside className="w-64 bg-emerald-700 text-white flex flex-col">
 
-            {/* Logo */}
+        <header className="w-full bg-emerald-700 text-white shadow-md">
 
-            <div className="p-6 border-b border-emerald-600">
+            <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-                <h1 className="text-2xl font-bold">
-                    AI Food Label
-                </h1>
+                {/* Logo */}
 
-                <p className="text-sm text-emerald-100 mt-1">
-                    Analyzer
-                </p>
-
-            </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 p-4">
-
-                {/* Dashboard */}
-
-                <button
+                <div
+                    className="flex items-center gap-3 cursor-pointer"
                     onClick={() => navigate("/")}
-                    className="flex items-center gap-3 w-full p-3 rounded-lg bg-emerald-600"
                 >
-                    <FaHome />
-                    Dashboard
-                </button>
 
-                {!isLoggedIn ? (
+                    <div className="text-2xl">
+                        🌿
+                    </div>
 
-                    <>
-                        <button
-                            onClick={() => navigate("/login")}
-                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2"
-                        >
-                            <FaSignInAlt />
-                            Login
-                        </button>
+                    <div>
 
-                        <button
-                            onClick={() => navigate("/register")}
-                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2"
-                        >
-                            <FaUserPlus />
-                            Sign Up
-                        </button>
-                    </>
+                        <h1 className="text-xl font-bold">
+                            AI Food Label Analyzer
+                        </h1>
 
-                ) : (
-
-                    <>
-                        <button
-                            onClick={() => navigate("/history")}
-                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2"
-                        >
-                            <FaHistory />
-                            History
-                        </button>
-
-                        <button
-                            onClick={() => navigate("/profile")}
-                            className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-emerald-600 transition mt-2"
-                        >
-                            <FaUserCircle />
-                            Profile
-                        </button>
-                    </>
-
-                )}
-
-            </nav>
-
-            {/* Logout */}
-
-            {isLoggedIn && (
-
-                <div className="p-4 border-t border-emerald-600">
-
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-red-600 transition"
-                    >
-                        <FaSignOutAlt />
-                        Logout
-                    </button>
+                    </div>
 
                 </div>
 
-            )}
 
-        </aside>
+                {/* Navigation */}
+
+                <nav className="flex items-center gap-2">
+
+                    {/* Dashboard */}
+
+                    <button
+                        onClick={() => navigate("/")}
+                        className={`
+    flex
+    items-center
+    gap-2
+    px-4
+    py-2
+    rounded-lg
+    transition
+    ${isActive("/")
+                                ? "bg-emerald-600"
+                                : "hover:bg-emerald-600"
+                            }
+`}
+                    >
+
+                        <FaHome />
+
+                        <span>
+                            Dashboard
+                        </span>
+
+                    </button>
+
+
+                    {!isLoggedIn ? (
+
+                        <>
+
+                            {/* Login */}
+
+                            <button
+                                onClick={() => navigate("/login")}
+                                className="
+                                    flex
+                                    items-center
+                                    gap-2
+                                    px-4
+                                    py-2
+                                    rounded-lg
+                                    hover:bg-emerald-600
+                                    transition
+                                "
+                            >
+
+                                <FaSignInAlt />
+
+                                <span>
+                                    Login
+                                </span>
+
+                            </button>
+
+
+                            {/* Sign Up */}
+
+                            <button
+                                onClick={() => navigate("/register")}
+                                className="
+                                    flex
+                                    items-center
+                                    gap-2
+                                    px-4
+                                    py-2
+                                    rounded-lg
+                                    hover:bg-emerald-600
+                                    transition
+                                "
+                            >
+
+                                <FaUserPlus />
+
+                                <span>
+                                    Sign Up
+                                </span>
+
+                            </button>
+
+                        </>
+
+                    ) : (
+
+                        <>
+
+                            {/* History */}
+
+                            <button
+                                onClick={() => navigate("/history")}
+                                className={`
+    flex
+    items-center
+    gap-2
+    px-4
+    py-2
+    rounded-lg
+    transition
+    ${isActive("/history")
+                                        ? "bg-emerald-600"
+                                        : "hover:bg-emerald-600"
+                                    }
+`}
+                            >
+
+                                <FaHistory />
+
+                                <span>
+                                    History
+                                </span>
+
+                            </button>
+
+                            {/* Compare */}
+
+                            <button
+                                onClick={() => navigate("/compare")}
+                                className={`
+    flex
+    items-center
+    gap-2
+    px-4
+    py-2
+    rounded-lg
+    transition
+    ${isActive("/compare")
+                                        ? "bg-emerald-600"
+                                        : "hover:bg-emerald-600"
+                                    }
+`}
+                            >
+                                <FaBalanceScale />
+
+                                <span>
+                                    Compare
+                                </span>
+                            </button>
+
+
+                            {/* Profile */}
+
+                            <button
+                                onClick={() => navigate("/profile")}
+                                className={`
+    flex
+    items-center
+    gap-2
+    px-4
+    py-2
+    rounded-lg
+    transition
+    ${location.pathname.startsWith("/profile")
+                                        ? "bg-emerald-600"
+                                        : "hover:bg-emerald-600"
+                                    }
+`}
+                            >
+
+                                <FaUserCircle />
+
+                                <span>
+                                    Profile
+                                </span>
+
+                            </button>
+
+
+                            {/* Logout */}
+
+                            <button
+                                onClick={handleLogout}
+                                className="
+                                    flex
+                                    items-center
+                                    gap-2
+                                    px-4
+                                    py-2
+                                    rounded-lg
+                                    hover:bg-red-600
+                                    transition
+                                    ml-2
+                                "
+                            >
+
+                                <FaSignOutAlt />
+
+                                <span>
+                                    Logout
+                                </span>
+
+                            </button>
+
+                        </>
+
+                    )}
+
+                </nav>
+
+            </div>
+
+        </header>
+
     );
 }
 

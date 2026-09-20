@@ -1,4 +1,4 @@
-import Sidebar from "../components/Sidebar";
+
 import HeroCard from "../components/HeroCard";
 import StatCard from "../components/StatCard";
 import UploadCard from "../components/UploadCard";
@@ -17,12 +17,6 @@ function Dashboard() {
     const isLoggedIn = !!localStorage.getItem("access_token");
 
     const [totalAnalyses, setTotalAnalyses] = useState(0);
-
-    const handleLogout = () => {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        window.location.href = "/";
-    };
     useEffect(() => {
 
         const fetchAnalysisCount = async () => {
@@ -65,11 +59,10 @@ function Dashboard() {
 
     return (
 
-        <div className="min-h-screen flex bg-slate-100">
+        <div className="min-h-screen bg-slate-100">
 
-            <Sidebar handleLogout={handleLogout} />
 
-            <main className="flex-1 p-8">
+            <main className="w-full p-8">
 
                 <HeroCard />
 
