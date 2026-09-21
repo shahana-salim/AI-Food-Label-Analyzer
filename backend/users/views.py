@@ -262,6 +262,55 @@ class ResetPasswordView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class ChangeEmailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+
+        new_email = request.data.get("email")
+        current_password = request.data.get("current_password")
+
+        if not new_email:
+            return Response(
+                {"error": "New email is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not current_password:
+            return Response(
+                {"error": "Current password is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        new_email = new_email.strip().lower()
+
+        if not request.user.check_password(current_password):
+            return Response(
+                {"error": "Current password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if User.objects.filter(email=new_email).exclude(
+            id=request.user.id
+        ).exists():
+            return Response(
+                {"error": "An account with this email already exists."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        request.user.email = new_email
+        request.user.username = new_email
+        request.user.save()
+
+        return Response(
+            {
+                "message": "Email updated successfully.",
+                "email": request.user.email,
+            },
+            status=status.HTTP_200_OK,
+        )
 class AdminDashboardView(APIView):
     permission_classes = [IsAdminUser]
 

@@ -23,6 +23,11 @@ urlpatterns = [
         name="reset-password",
     ),
     path(
+        "change-email/",
+        views.ChangeEmailView.as_view(),
+        name="change-email",
+    ),
+    path(
         "admin/dashboard/", views.AdminDashboardView.as_view(), name="admin-dashboard"
     ),
     path("admin/users/", views.AdminUsersView.as_view(), name="admin-users"),

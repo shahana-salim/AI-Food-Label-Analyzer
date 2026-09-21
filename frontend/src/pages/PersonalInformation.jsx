@@ -4,6 +4,12 @@ import Breadcrumb from "../components/Breadcrumb";
 import api from "../services/api";
 
 function PersonalInformation() {
+
+    const [showChangeEmail, setShowChangeEmail] = useState(false);
+    const [newEmail, setNewEmail] = useState("");
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [emailError, setEmailError] = useState("");
+    const [emailSuccess, setEmailSuccess] = useState("");
     const [profile, setProfile] = useState({
         username: "",
         email: "",
@@ -88,6 +94,77 @@ function PersonalInformation() {
             console.error(error);
             alert("Failed to update profile.");
             setProfile(savedProfile);
+        }
+    };
+    const handleChangeEmail = async () => {
+
+        setEmailError("");
+        setEmailSuccess("");
+
+        if (!newEmail.trim()) {
+            setEmailError("New email is required.");
+            return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail.trim())) {
+            setEmailError("Please enter a valid email address.");
+            return;
+        }
+
+        if (!currentPassword) {
+            setEmailError("Current password is required.");
+            return;
+        }
+
+        try {
+
+            const token = localStorage.getItem("access_token");
+
+            const response = await api.put(
+                "change-email/",
+                {
+                    email: newEmail.trim(),
+                    current_password: currentPassword,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setProfile({
+                ...profile,
+                email: response.data.email,
+            });
+
+            setSavedProfile({
+                ...savedProfile,
+                email: response.data.email,
+            });
+
+            setEmailSuccess(
+                "Email updated successfully!"
+            );
+
+            setNewEmail("");
+            setCurrentPassword("");
+
+            setTimeout(() => {
+                setShowChangeEmail(false);
+                setEmailSuccess("");
+            }, 1500);
+
+        } catch (error) {
+
+            console.error(
+                error.response?.data || error.message
+            );
+
+            setEmailError(
+                error.response?.data?.error ||
+                "Failed to update email."
+            );
         }
     };
     return (
@@ -189,9 +266,15 @@ function PersonalInformation() {
                         {profile.email}
                     </p>
 
-                    <button
-                        onClick={() => alert("Change Email feature coming soon")}
-                        className="
+                    {!showChangeEmail && (
+
+                        <button
+                            onClick={() => {
+                                setShowChangeEmail(true);
+                                setEmailError("");
+                                setEmailSuccess("");
+                            }}
+                            className="
             mt-5
             border
             border-emerald-600
@@ -202,9 +285,132 @@ function PersonalInformation() {
             rounded-lg
             transition
         "
-                    >
-                        Change Email
-                    </button>
+                        >
+                            Change Email
+                        </button>
+
+                    )}
+
+                    {showChangeEmail && (
+
+                        <div className="mt-5 space-y-4">
+
+                            <input
+                                type="email"
+                                placeholder="New Email Address"
+                                value={newEmail}
+                                onChange={(e) =>
+                                    setNewEmail(e.target.value)
+                                }
+                                className="
+                w-full
+                rounded-lg
+                border
+                border-slate-300
+                px-4
+                py-2
+                focus:outline-none
+                focus:ring-2
+                focus:ring-emerald-500
+            "
+                            />
+
+                            <input
+                                type="password"
+                                placeholder="Current Password"
+                                value={currentPassword}
+                                onChange={(e) =>
+                                    setCurrentPassword(e.target.value)
+                                }
+                                className="
+                w-full
+                rounded-lg
+                border
+                border-slate-300
+                px-4
+                py-2
+                focus:outline-none
+                focus:ring-2
+                focus:ring-emerald-500
+            "
+                            />
+
+                            {emailError && (
+
+                                <div className="
+                bg-red-100
+                border
+                border-red-300
+                text-red-700
+                rounded-lg
+                p-3
+                text-sm
+            ">
+                                    {emailError}
+                                </div>
+
+                            )}
+
+                            {emailSuccess && (
+
+                                <div className="
+                bg-green-100
+                border
+                border-green-300
+                text-green-700
+                rounded-lg
+                p-3
+                text-sm
+            ">
+                                    {emailSuccess}
+                                </div>
+
+                            )}
+
+                            <div className="flex gap-3">
+
+                                <button
+                                    onClick={handleChangeEmail}
+                                    className="
+                    bg-emerald-600
+                    hover:bg-emerald-700
+                    text-white
+                    px-5
+                    py-2
+                    rounded-lg
+                    transition
+                "
+                                >
+                                    Update Email
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        setShowChangeEmail(false);
+                                        setNewEmail("");
+                                        setCurrentPassword("");
+                                        setEmailError("");
+                                        setEmailSuccess("");
+                                    }}
+                                    className="
+                    border
+                    border-slate-300
+                    text-slate-600
+                    hover:bg-slate-50
+                    px-5
+                    py-2
+                    rounded-lg
+                    transition
+                "
+                                >
+                                    Cancel
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    )}
 
                 </div>
 
