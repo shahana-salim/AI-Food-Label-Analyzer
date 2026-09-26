@@ -9,6 +9,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from .models import FoodLabel
 from .ai_service import analyze_food_label
 from rest_framework.permissions import IsAdminUser
+import requests
 
 from .models import FoodLabel
 from .serializers import (
@@ -16,6 +17,7 @@ from .serializers import (
     FoodLabelHistorySerializer,
     AdminFoodLabelSerializer,
 )
+from .alternative_service import find_alternatives
 
 
 class FoodLabelUploadView(APIView):
@@ -218,6 +220,61 @@ class CompareProductsView(APIView):
             status=status.HTTP_200_OK,
         )
 
+class AlternativeProductsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            food_label = FoodLabel.objects.get(
+                pk=pk,
+                user=request.user
+            )
+        except FoodLabel.DoesNotExist:
+            return Response(
+                {"error": "Analysis not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            alternatives = find_alternatives(
+                food_label
+            )
+
+            return Response(
+                {
+                    "analysis_id": food_label.id,
+                    "product_name": (
+                        food_label.analysis or {}
+                    ).get(
+                        "product_name",
+                        ""
+                    ),
+                    "alternatives": alternatives
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except requests.RequestException:
+            return Response(
+                {
+                    "error": (
+                        "Unable to find alternatives "
+                        "right now. Please try again later."
+                    )
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+
+        except Exception:
+            return Response(
+                {
+                    "error": (
+                        "Unable to find alternatives "
+                        "right now. Please try again later."
+                    )
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
 class CompareUploadView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -1,11 +1,16 @@
 from django.urls import path
-from .views import FoodLabelUploadView, FoodLabelHistoryView, FoodLabelDetailView, MyAnalysisCountView, CompareProductsView,AdminFoodLabelListView,CompareUploadView
+from .views import AlternativeProductsView, FoodLabelUploadView, FoodLabelHistoryView, FoodLabelDetailView, MyAnalysisCountView, CompareProductsView,AdminFoodLabelListView,CompareUploadView
 
 urlpatterns = [
     path("upload-label/", FoodLabelUploadView.as_view(), name="upload-label"),
     path("history/", FoodLabelHistoryView.as_view(), name="food-history"),
     path("history/<int:pk>/", FoodLabelDetailView.as_view(), name="food-detail"),
     path("my-analysis-count/",MyAnalysisCountView.as_view(),name="my-analysis-count"),
+    path(
+    "alternatives/<int:pk>/",
+    AlternativeProductsView.as_view(),
+    name="alternative-products"
+    ),
     path(
     "compare/",
     CompareProductsView.as_view(),

@@ -83,6 +83,7 @@ Return this JSON format:
 
 {{
 "product_name": "",
+"product_category": "",
 "ingredients": [
 {{
 "name": "",
@@ -140,6 +141,19 @@ Examples:
 "PepsiCo ... manufacturer information ... Lay's Classic Salted" → "Lay's Classic Salted"
 
 "PepsiCo" appearing only in manufacturer information → "Not Available"
+
+For product_category:
+
+- Identify the general food category of the packaged product.
+- Return a short category name that can be used to find similar food products.
+- Use the product itself and the uploaded images as the basis for classification.
+- Do not invent a category that is not supported by the product.
+- Prefer commonly used food categories such as:
+  "biscuits", "chips", "snacks", "cereals",
+  "sweet spreads", "fruit juices", "soft drinks",
+  "chocolates", "bakery products", "instant noodles",
+  "dairy products", or "sauces".
+- If the category cannot be confidently identified, return "Not Available".
 
 For each ingredient:
 

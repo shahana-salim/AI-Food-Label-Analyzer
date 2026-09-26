@@ -11,17 +11,23 @@ function UploadCard() {
     const [loadingMessage, setLoadingMessage] = useState(
         "Reading your food label..."
     );
+
+    const [alternatives, setAlternatives] = useState([]);
+    const [loadingAlternatives, setLoadingAlternatives] = useState(false);
+    const [alternativesLoaded, setAlternativesLoaded] = useState(false);
+    const [alternativeError, setAlternativeError] = useState("");
+
     const [error, setError] = useState("");
     const [isDragging, setIsDragging] = useState(false);
-    useEffect(() => {
 
+    useEffect(() => {
         if (!loading) return;
 
         const messages = [
             "Reading your food label...",
             "Extracting ingredients...",
             "Analyzing the food information...",
-            "Preparing your results..."
+            "Preparing your results...",
         ];
 
         let index = 0;
@@ -29,33 +35,28 @@ function UploadCard() {
         setLoadingMessage(messages[0]);
 
         const interval = setInterval(() => {
-
             index = (index + 1) % messages.length;
-
             setLoadingMessage(messages[index]);
-
         }, 3000);
 
         return () => clearInterval(interval);
-
     }, [loading]);
-    const isLoggedIn = !!localStorage.getItem("access_token");
-    const handleFileChange = (event) => {
 
+    const isLoggedIn = !!localStorage.getItem("access_token");
+
+    const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
 
         if (files.length === 0) return;
 
         // Anonymous users → only one image
         if (!isLoggedIn) {
-
             setSelectedImages([files[0]]);
             setPreviews([URL.createObjectURL(files[0])]);
             return;
         }
 
         // Logged-in users → append images (maximum 3)
-
         const updatedImages = [...selectedImages, ...files];
 
         if (updatedImages.length > 3) {
@@ -66,9 +67,10 @@ function UploadCard() {
         setSelectedImages(updatedImages);
 
         setPreviews(
-            updatedImages.map(file => URL.createObjectURL(file))
+            updatedImages.map((file) => URL.createObjectURL(file))
         );
     };
+
     const handleDrop = (e) => {
         e.preventDefault();
         setIsDragging(false);
@@ -85,8 +87,8 @@ function UploadCard() {
             },
         });
     };
-    const removeImage = (index) => {
 
+    const removeImage = (index) => {
         const updatedImages = selectedImages.filter(
             (_, i) => i !== index
         );
@@ -101,7 +103,6 @@ function UploadCard() {
         if (updatedImages.length === 0) {
             document.getElementById("food-label-input").value = "";
         }
-
     };
 
     const handleAnalyze = async () => {
@@ -110,6 +111,11 @@ function UploadCard() {
         setLoading(true);
         setError("");
         setAnalysisResult(null);
+
+        // Clear previous alternatives
+        setAlternatives([]);
+        setAlternativesLoaded(false);
+        setAlternativeError("");
 
         try {
             const formData = new FormData();
@@ -153,9 +159,62 @@ function UploadCard() {
             setLoading(false);
         }
     };
+
+    // Find potential alternative products
+    const handleFindAlternatives = async () => {
+        const analysisId = analysisResult?.data?.id;
+
+        if (!analysisId) {
+            setAlternativeError(
+                "Unable to find the analysis ID. Please analyze the product again."
+            );
+            return;
+        }
+
+        try {
+            setLoadingAlternatives(true);
+            setAlternativeError("");
+
+            const token = localStorage.getItem("access_token");
+
+            const response = await api.get(
+                `alternatives/${analysisId}/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setAlternatives(response.data.alternatives || []);
+            setAlternativesLoaded(true);
+
+        } catch (err) {
+            console.error(err);
+
+            setAlternativeError(
+                "Unable to find alternatives right now. Please try again later."
+            );
+        } finally {
+            setLoadingAlternatives(false);
+        }
+    };
+
+    const formatCategory = (categories) => {
+        if (!categories || categories.length === 0) {
+            return "";
+        }
+
+        const category = categories[0]
+            .replace("en:", "")
+            .replace(/-/g, " ");
+
+        return category.charAt(0).toUpperCase() + category.slice(1);
+    };
+
     return (
         <>
-            <div className="bg-white rounded-2xl shadow-md p-8 mt-8" >
+            <div className="bg-white rounded-2xl shadow-md p-8 mt-8">
 
                 <div className="text-center">
 
@@ -180,6 +239,7 @@ function UploadCard() {
                     </p>
 
                 </div>
+
                 <input
                     type="file"
                     multiple={isLoggedIn}
@@ -191,20 +251,29 @@ function UploadCard() {
 
                 {previews.length === 0 ? (
 
-                    <div onDragOver={(e) => e.preventDefault()}
+                    <div
+                        onDragOver={(e) => {
+                            e.preventDefault();
+                            setIsDragging(true);
+                        }}
+                        onDragLeave={() => setIsDragging(false)}
                         onDrop={handleDrop}
-                        className="
-                       mt-8
-                       border-2
-                       border-dashed
-                       border-emerald-400
-                       rounded-2xl
-                       p-12
-                       text-center
-                       hover:bg-emerald-50
-                       transition
-                       cursor-pointer
-        "
+                        className={`
+                            mt-8
+                            border-2
+                            border-dashed
+                            ${
+                                isDragging
+                                    ? "border-emerald-600 bg-emerald-50"
+                                    : "border-emerald-400"
+                            }
+                            rounded-2xl
+                            p-12
+                            text-center
+                            hover:bg-emerald-50
+                            transition
+                            cursor-pointer
+                        `}
                     >
 
                         <FaCloudUploadAlt className="text-6xl text-emerald-600 mx-auto mb-6" />
@@ -219,18 +288,20 @@ function UploadCard() {
 
                         <button
                             onClick={() =>
-                                document.getElementById("food-label-input").click()
+                                document
+                                    .getElementById("food-label-input")
+                                    .click()
                             }
                             className="
-                           mt-8
-                           bg-emerald-600
-                           hover:bg-emerald-700
-                           text-white
-                           px-8
-                           py-3
-                           rounded-xl
-                           transition
-                        "
+                                mt-8
+                                bg-emerald-600
+                                hover:bg-emerald-700
+                                text-white
+                                px-8
+                                py-3
+                                rounded-xl
+                                transition
+                            "
                         >
                             Browse Files
                         </button>
@@ -244,6 +315,7 @@ function UploadCard() {
                 ) : (
 
                     <div className="mt-8 bg-slate-50 rounded-2xl p-8 text-center shadow-inner">
+
                         {isLoggedIn && (
                             <h3 className="text-lg font-semibold text-slate-700 mb-6">
                                 Images Selected ({selectedImages.length}/3)
@@ -310,17 +382,19 @@ function UploadCard() {
                         </div>
 
                         <p className="text-emerald-600 mt-6">
-                            ✓ {selectedImages.length} image{selectedImages.length > 1 ? "s" : ""} selected successfully
+                            ✓ {selectedImages.length} image
+                            {selectedImages.length > 1 ? "s" : ""} selected successfully
                         </p>
 
                         <div className="flex justify-center gap-4 mt-8 flex-wrap">
-
 
                             {(!isLoggedIn || selectedImages.length < 3) && (
 
                                 <button
                                     onClick={() =>
-                                        document.getElementById("food-label-input").click()
+                                        document
+                                            .getElementById("food-label-input")
+                                            .click()
                                     }
                                     disabled={loading}
                                     className="
@@ -336,7 +410,9 @@ function UploadCard() {
                                         disabled:cursor-not-allowed
                                     "
                                 >
-                                    {isLoggedIn ? "Add Another Image" : "Choose Another"}
+                                    {isLoggedIn
+                                        ? "Add Another Image"
+                                        : "Choose Another"}
                                 </button>
 
                             )}
@@ -345,15 +421,15 @@ function UploadCard() {
                                 onClick={handleAnalyze}
                                 disabled={loading}
                                 className="
-                                px-6
-                                py-3
-                                rounded-xl
-                                bg-emerald-600
-                                hover:bg-emerald-700
-                                text-white
-                                transition
-                                disabled:bg-emerald-400
-                            "
+                                    px-6
+                                    py-3
+                                    rounded-xl
+                                    bg-emerald-600
+                                    hover:bg-emerald-700
+                                    text-white
+                                    transition
+                                    disabled:bg-emerald-400
+                                "
                             >
                                 {loading ? (
                                     <span className="flex items-center gap-2">
@@ -364,9 +440,12 @@ function UploadCard() {
                                     "Analyze Label"
                                 )}
                             </button>
+
                         </div>
+
                         {loading && (
                             <div className="mt-5 text-center">
+
                                 <p className="text-slate-700 font-medium">
                                     {loadingMessage}
                                 </p>
@@ -374,6 +453,7 @@ function UploadCard() {
                                 <p className="text-sm text-slate-500 mt-1">
                                     This may take a minute. Please don't close or refresh the page.
                                 </p>
+
                             </div>
                         )}
 
@@ -382,17 +462,201 @@ function UploadCard() {
                 )}
 
             </div>
+
             {error && (
                 <div className="mt-6 rounded-xl border border-red-300 bg-red-50 p-4 text-red-700">
                     {error}
                 </div>
             )}
+
             {analysisResult && (
-                <AnalysisResult analysis={analysisResult.analysis} />
+                <>
+                    <AnalysisResult analysis={analysisResult.analysis} />
+
+                    {/* Potential Alternatives */}
+                    {isLoggedIn && (
+                        <div className="mt-8 bg-white rounded-2xl shadow-md p-8">
+
+                            <div className="mb-5">
+                                <h2 className="text-2xl font-bold text-slate-800">
+                                    Potential Alternatives
+                                </h2>
+
+                                <p className="text-slate-600 mt-2">
+                                    Find potential alternatives based on this
+                                    product and your saved preferences.
+                                </p>
+                            </div>
+
+                            {!alternativesLoaded && (
+                                <button
+                                    onClick={handleFindAlternatives}
+                                    disabled={loadingAlternatives}
+                                    className="
+                                        px-6
+                                        py-3
+                                        bg-emerald-600
+                                        hover:bg-emerald-700
+                                        text-white
+                                        rounded-xl
+                                        font-semibold
+                                        transition
+                                        disabled:bg-emerald-400
+                                        disabled:cursor-not-allowed
+                                    "
+                                >
+                                    {loadingAlternatives ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                            Finding Alternatives...
+                                        </span>
+                                    ) : (
+                                        "Find Potential Alternatives"
+                                    )}
+                                </button>
+                            )}
+
+                            {alternativeError && (
+                                <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+                                    {alternativeError}
+                                </div>
+                            )}
+
+                            {alternativesLoaded &&
+                                alternatives.length === 0 &&
+                                !alternativeError && (
+                                    <p className="mt-5 text-slate-600">
+                                        No suitable potential alternatives were
+                                        found. Try checking your saved dietary
+                                        preferences or analyzing another product.
+                                    </p>
+                                )}
+
+                            {alternatives.length > 0 && (
+                                <div className="mt-6">
+
+                                    <h3 className="text-xl font-semibold text-slate-800 mb-5">
+                                        Available Alternatives
+                                    </h3>
+
+                                    <div className="grid gap-5 md:grid-cols-2">
+
+                                        {alternatives.map((product, index) => {
+
+                                            const calories =
+                                                product.nutriments?.[
+                                                    "energy-kcal_100g"
+                                                ];
+
+                                            return (
+                                                <div
+                                                    key={product.code || index}
+                                                    className="
+                                                        border
+                                                        border-slate-200
+                                                        rounded-xl
+                                                        p-5
+                                                        shadow-sm
+                                                        hover:shadow-md
+                                                        transition
+                                                    "
+                                                >
+
+                                                    {product.image_url && (
+                                                        <img
+                                                            src={product.image_url}
+                                                            alt={
+                                                                product.product_name ||
+                                                                "Food product"
+                                                            }
+                                                            className="
+                                                                w-full
+                                                                h-48
+                                                                object-contain
+                                                                rounded-lg
+                                                                bg-slate-50
+                                                                mb-4
+                                                            "
+                                                        />
+                                                    )}
+
+                                                    <h4 className="text-lg font-bold text-slate-800">
+                                                        {product.product_name ||
+                                                            "Unnamed Product"}
+                                                    </h4>
+
+                                                    {product.brands && (
+                                                        <p className="text-slate-600 mt-2">
+                                                            <span className="font-medium">
+                                                                Brand:
+                                                            </span>{" "}
+                                                            {product.brands}
+                                                        </p>
+                                                    )}
+
+                                                    {product.categories_tags?.length > 0 && (
+                                                        <p className="text-slate-600 mt-1">
+                                                            <span className="font-medium">
+                                                                Category:
+                                                            </span>{" "}
+                                                            {formatCategory(
+                                                                product.categories_tags
+                                                            )}
+                                                        </p>
+                                                    )}
+
+                                                    {calories !== undefined &&
+                                                        calories !== null && (
+                                                            <p className="text-slate-600 mt-1">
+                                                                <span className="font-medium">
+                                                                    Energy:
+                                                                </span>{" "}
+                                                                {calories} kcal/100g
+                                                            </p>
+                                                        )}
+
+                                                    {product.code && (
+                                                        <a
+                                                            href={`https://world.openfoodfacts.org/product/${product.code}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="
+                                                                inline-block
+                                                                mt-4
+                                                                text-emerald-600
+                                                                font-semibold
+                                                                hover:underline
+                                                            "
+                                                        >
+                                                            View Product
+                                                        </a>
+                                                    )}
+
+                                                </div>
+                                            );
+                                        })}
+
+                                    </div>
+
+                                </div>
+                            )}
+
+                        </div>
+                    )}
+
+                    {/* Message for users who are not logged in */}
+                    {!isLoggedIn && (
+                        <div className="mt-8 bg-white rounded-2xl shadow-md p-6 text-center">
+                            <p className="text-slate-600">
+                                Sign in to find potential alternatives based
+                                on your saved preferences.
+                            </p>
+                        </div>
+                    )}
+                </>
             )}
         </>
     );
 }
-
 
 export default UploadCard;
