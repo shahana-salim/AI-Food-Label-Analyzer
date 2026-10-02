@@ -213,8 +213,6 @@ function AnalysisDetails() {
                                     product.categories_tags
                                 );
 
-                                const calories =
-                                    product.nutriments?.["energy-kcal_100g"];
 
                                 return (
                                     <div
@@ -263,11 +261,7 @@ function AnalysisDetails() {
                                                 </div>
                                             )}
 
-                                            {calories !== undefined && (
-                                                <p className="mt-3 text-sm text-slate-600">
-                                                    {calories} kcal per 100g
-                                                </p>
-                                            )}
+                                        
 
                                             {product.code && (
                                                 <a

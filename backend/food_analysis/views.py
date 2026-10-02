@@ -220,15 +220,21 @@ class CompareProductsView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
 class AlternativeProductsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
+        import logging
+
+        logger = logging.getLogger(__name__)
+
         try:
             food_label = FoodLabel.objects.get(
                 pk=pk,
                 user=request.user
             )
+
         except FoodLabel.DoesNotExist:
             return Response(
                 {"error": "Analysis not found."},
@@ -236,41 +242,47 @@ class AlternativeProductsView(APIView):
             )
 
         try:
-            alternatives = find_alternatives(
-                food_label
-            )
+            alternatives = find_alternatives(food_label)
 
             return Response(
                 {
                     "analysis_id": food_label.id,
                     "product_name": (
                         food_label.analysis or {}
-                    ).get(
-                        "product_name",
-                        ""
-                    ),
+                    ).get("product_name", ""),
                     "alternatives": alternatives
                 },
                 status=status.HTTP_200_OK
             )
 
         except requests.RequestException:
+            logger.exception(
+                "Open Food Facts request failed for analysis ID %s",
+                pk
+            )
+
             return Response(
                 {
                     "error": (
-                        "Unable to find alternatives "
-                        "right now. Please try again later."
+                        "The product database is temporarily "
+                        "unavailable. Please try again later."
                     )
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
         except Exception:
+            logger.exception(
+                "Unexpected error while finding alternatives "
+                "for analysis ID %s",
+                pk
+            )
+
             return Response(
                 {
                     "error": (
-                        "Unable to find alternatives "
-                        "right now. Please try again later."
+                        "Unable to find alternatives right now. "
+                        "Please try again later."
                     )
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE

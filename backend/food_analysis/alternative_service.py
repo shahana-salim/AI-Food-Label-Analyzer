@@ -5,13 +5,12 @@ from users.models import UserProfile
 
 
 OPEN_FOOD_FACTS_SEARCH_URL = (
-    "https://world.openfoodfacts.net/api/v2/search"
+    "https://world.openfoodfacts.org/api/v2/search"
 )
 
 OPEN_FOOD_FACTS_TEXT_SEARCH_URL = (
-    "https://world.openfoodfacts.net/cgi/search.pl"
+    "https://world.openfoodfacts.org/cgi/search.pl"
 )
-
 
 CATEGORY_MAPPING = {
     "sweets": "sweets",
@@ -103,6 +102,41 @@ PRODUCT_TYPE_KEYWORDS = {
             "tortilla",
         },
     },
+    
+    
+    "snacks": {
+        "extruded_snack": {
+            "kurkure",
+            "bingo",
+            "tedhe medhe",
+            "too yumm",
+            "haldiram",
+            "namkeen",
+            "sev",
+            "bhujia",
+            "mixture",
+            "murukku",
+            "wheels",
+            "puffed snack",
+            "extruded snack",
+        },
+        "potato_chips": {
+            "lays",
+            "lay's",
+            "potato chips",
+            "potato wafers",
+        },
+        "nachos": {
+            "doritos",
+            "nachos",
+            "tortilla chips",
+        },
+        "snack_wafers": {
+            "mad angles",
+            "balaji wafers",
+            "aloos sev",
+        },
+    },
 
     "chocolates": {
         "chocolate": {
@@ -192,6 +226,33 @@ PRODUCT_SEARCH_TERMS = {
         "mango juice",
         "fruit drink",
         "fruit beverage",
+    ],
+    # Search multiple snack brands and types for broader coverage.
+    "extruded_snack": [
+        "Kurkure",
+        "Bingo Tedhe Medhe",
+        "Bingo snacks",
+        "Too Yumm snacks",
+        "Haldiram namkeen",
+        "namkeen",
+        "sev",
+        "bhujia",
+        "mixture",
+    ],
+    "potato_chips": [
+        "Lay's chips",
+        "potato chips",
+        "Balaji wafers",
+    ],
+    "nachos": [
+        "Doritos",
+        "nachos",
+        "tortilla chips",
+    ],
+    "snack_wafers": [
+        "Bingo Mad Angles",
+        "Balaji snacks",
+        "snack wafers",
     ],
 }
 
@@ -291,6 +352,21 @@ def get_product_category(food_label):
     ):
         return "chips"
 
+    
+    if any(
+        keyword in product_name
+        for keyword in [
+            "kurkure",
+            "namkeen",
+            "sev",
+            "mixture",
+            "bhujia",
+            "murukku",
+            "banana chips",
+        ]
+    ):
+        return "snacks"
+
     if any(
         keyword in product_name
         for keyword in [
@@ -309,27 +385,48 @@ def get_product_category(food_label):
     return None
 
 
+def is_sold_in_india(product):
+    """
+    Return True only when Open Food Facts explicitly lists India
+    in the product's country tags.
+    """
+    country_tags = (
+        product.get("countries_tags_en")
+        or product.get("countries_tags")
+        or []
+    )
+
+    if isinstance(country_tags, str):
+        country_tags = country_tags.split(",")
+
+    normalized_tags = {
+        str(tag).strip().lower()
+        for tag in country_tags
+        if tag
+    }
+
+    return bool(
+        normalized_tags.intersection({
+            "india",
+            "en:india",
+        })
+    )
+
+
 def search_products_by_category(
     category,
     page_size=30,
     search_terms=None,
 ):
-    """
-    Search Open Food Facts for candidate products.
-
-    The v2 endpoint supports structured category filtering, but it does
-    not support full-text ``search_terms``. When a specific search term
-    is supplied, use the legacy full-text endpoint instead. This is
-    important for product types such as Soan Papdi and Maaza, where the
-    useful product name may not be represented by an Open Food Facts
-    category tag.
-    """
+    """Search Open Food Facts, returning only products tagged for India."""
 
     fields = (
         "code,"
         "product_name,"
         "brands,"
         "categories_tags,"
+        "countries_tags,"
+        "countries_tags_en,"
         "ingredients_text,"
         "allergens_tags,"
         "nutriments,"
@@ -344,11 +441,10 @@ def search_products_by_category(
     }
 
     if search_terms:
-        # Full-text search. Open Food Facts documents that the v2 search
-        # endpoint does not support search_terms, while the legacy search
-        # endpoint does.
+        # Legacy endpoint supports full-text search.
         params = {
             "search_terms": search_terms,
+            "countries_tags_en": "india",
             "page": 1,
             "page_size": page_size,
             "json": 1,
@@ -359,13 +455,14 @@ def search_products_by_category(
             OPEN_FOOD_FACTS_TEXT_SEARCH_URL,
             params=params,
             headers=headers,
-            auth=("off", "off"),
             timeout=15,
         )
+
     else:
-        # Structured category search.
+        # Structured search: filter by category and country.
         params = {
             "categories_tags_en": category,
+            "countries_tags_en": "india",
             "page": 1,
             "page_size": page_size,
             "fields": fields,
@@ -375,16 +472,21 @@ def search_products_by_category(
             OPEN_FOOD_FACTS_SEARCH_URL,
             params=params,
             headers=headers,
-            auth=("off", "off"),
             timeout=15,
         )
 
     response.raise_for_status()
-
     data = response.json()
 
-    return data.get("products", [])
+    # Strict validation: never return a product unless its country
+    # tags explicitly include India.
+    products = data.get("products", [])
 
+    return [
+        product
+        for product in products
+        if is_sold_in_india(product)
+    ]
 
 def has_allergen_conflict(product, user_profile):
     product_allergens = (
@@ -754,6 +856,21 @@ def is_relevant_product(food_label, product):
     # --------------------------------------------------
 
     if original_type:
+        # For savoury snacks, allow closely related snack formats
+        # (extruded snacks, potato chips, nachos, and snack wafers).
+        # This lets brands such as Bingo!, Lay's, Doritos, and Balaji
+        # be considered without allowing biscuits or sweets.
+        snack_types = {
+            "extruded_snack",
+            "potato_chips",
+            "nachos",
+            "snack_wafers",
+            "chips",
+        }
+
+        if original_type in snack_types:
+            return candidate_type in snack_types
+
         return candidate_type == original_type
 
     # --------------------------------------------------

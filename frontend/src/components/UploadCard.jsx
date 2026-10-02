@@ -605,15 +605,7 @@ function UploadCard() {
                                                         </p>
                                                     )}
 
-                                                    {calories !== undefined &&
-                                                        calories !== null && (
-                                                            <p className="text-slate-600 mt-1">
-                                                                <span className="font-medium">
-                                                                    Energy:
-                                                                </span>{" "}
-                                                                {calories} kcal/100g
-                                                            </p>
-                                                        )}
+                                                    
 
                                                     {product.code && (
                                                         <a
