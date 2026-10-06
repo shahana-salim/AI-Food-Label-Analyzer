@@ -262,10 +262,9 @@ function UploadCard() {
                             mt-8
                             border-2
                             border-dashed
-                            ${
-                                isDragging
-                                    ? "border-emerald-600 bg-emerald-50"
-                                    : "border-emerald-400"
+                            ${isDragging
+                                ? "border-emerald-600 bg-emerald-50"
+                                : "border-emerald-400"
                             }
                             rounded-2xl
                             p-12
@@ -545,7 +544,7 @@ function UploadCard() {
 
                                             const calories =
                                                 product.nutriments?.[
-                                                    "energy-kcal_100g"
+                                                "energy-kcal_100g"
                                                 ];
 
                                             return (
@@ -594,18 +593,37 @@ function UploadCard() {
                                                         </p>
                                                     )}
 
-                                                    {product.categories_tags?.length > 0 && (
-                                                        <p className="text-slate-600 mt-1">
-                                                            <span className="font-medium">
-                                                                Category:
-                                                            </span>{" "}
-                                                            {formatCategory(
-                                                                product.categories_tags
-                                                            )}
-                                                        </p>
+                                                    {typeof product.personalized_score === "number" && (
+                                                        <div className="mt-4 rounded-lg bg-emerald-50 p-3">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-sm font-medium text-slate-700">
+                                                                    Personalized Match
+                                                                </span>
+
+                                                                <span className="text-sm font-bold text-emerald-700">
+                                                                    {product.personalized_score}/100
+                                                                </span>
+                                                            </div>
+
+                                                            {product.recommendation_reasons &&
+                                                                product.recommendation_reasons.length > 0 && (
+                                                                    <ul className="mt-2 space-y-1">
+                                                                        {product.recommendation_reasons.map(
+                                                                            (reason, reasonIndex) => (
+                                                                                <li
+                                                                                    key={reasonIndex}
+                                                                                    className="text-xs text-slate-600"
+                                                                                >
+                                                                                    ✓ {reason}
+                                                                                </li>
+                                                                            )
+                                                                        )}
+                                                                    </ul>
+                                                                )}
+                                                        </div>
                                                     )}
 
-                                                    
+
 
                                                     {product.code && (
                                                         <a

@@ -114,7 +114,7 @@ function AnalysisDetails() {
 
             setAlternativeError(
                 error.response?.data?.error ||
-                    "Unable to find alternatives right now. Please try again later."
+                "Unable to find alternatives right now. Please try again later."
             );
 
             setAlternativesLoaded(false);
@@ -253,15 +253,39 @@ function AnalysisDetails() {
                                                 </p>
                                             )}
 
-                                            {category && (
-                                                <div className="mt-3">
-                                                    <span className="inline-block rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-                                                        {category}
-                                                    </span>
+                                           
+
+                                            {typeof product.personalized_score === "number" && (
+                                                <div className="mt-4 rounded-lg bg-emerald-50 p-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm font-medium text-slate-700">
+                                                            Personalized Match
+                                                        </span>
+
+                                                        <span className="text-sm font-bold text-emerald-700">
+                                                            {product.personalized_score}/100
+                                                        </span>
+                                                    </div>
+
+                                                    {product.recommendation_reasons &&
+                                                        product.recommendation_reasons.length > 0 && (
+                                                            <ul className="mt-2 space-y-1">
+                                                                {product.recommendation_reasons.map(
+                                                                    (reason, reasonIndex) => (
+                                                                        <li
+                                                                            key={reasonIndex}
+                                                                            className="text-xs text-slate-600"
+                                                                        >
+                                                                            ✓ {reason}
+                                                                        </li>
+                                                                    )
+                                                                )}
+                                                            </ul>
+                                                        )}
                                                 </div>
                                             )}
 
-                                        
+
 
                                             {product.code && (
                                                 <a

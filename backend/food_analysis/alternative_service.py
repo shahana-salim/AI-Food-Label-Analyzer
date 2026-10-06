@@ -884,6 +884,605 @@ def is_relevant_product(food_label, product):
 
     return score >= 2
 
+
+def get_product_family_key(product):
+    """
+    Create a stable product-family key.
+
+    The goal is to remove different Open Food Facts
+    entries that represent the same product family,
+    while keeping genuinely different products.
+    """
+
+    name = normalize_text(
+        product.get("product_name") or ""
+    )
+
+    brand = normalize_text(
+        product.get("brands") or ""
+    )
+
+    if not name:
+        return None
+
+    # --------------------------------------------------
+    # Normalize product name
+    # --------------------------------------------------
+
+    name = re.sub(
+        r"\b\d+(?:\.\d+)?\s*(ml|l|ltr|cl|g|kg|mg)\b",
+        "",
+        name,
+    )
+
+    removable_words = {
+        "drink",
+        "drinks",
+        "beverage",
+        "beverages",
+        "refresh",
+        "original",
+        "pack",
+        "bottle",
+        "can",
+        "juice",
+    }
+
+    words = [
+        word
+        for word in name.split()
+        if word not in removable_words
+    ]
+
+    name = " ".join(words).strip()
+
+    if not name:
+        return None
+
+    # --------------------------------------------------
+    # Recognize important product brands directly
+    # from the product name.
+    #
+    # This handles cases where Open Food Facts
+    # has inconsistent brand fields.
+    # --------------------------------------------------
+
+    known_product_families = {
+        "maaza": "maaza",
+        "frooti": "frooti",
+        "slice": "slice",
+        "appy fizz": "appy fizz",
+        "appy": "appy",
+        "real fruit power": "real fruit power",
+        "rasna": "rasna",
+    }
+
+    # Check longer names first.
+    known_families = sorted(
+        known_product_families.items(),
+        key=lambda item: len(item[0]),
+        reverse=True,
+    )
+
+    for product_text, family_key in known_families:
+
+        if (
+            name == product_text
+            or name.startswith(
+                product_text + " "
+            )
+        ):
+            return family_key
+
+    # --------------------------------------------------
+    # If the product name itself contains the brand,
+    # remove the brand from the remaining name.
+    # --------------------------------------------------
+
+    if brand:
+
+        brand_words = set(
+            brand.split()
+        )
+
+        name_words = [
+            word
+            for word in name.split()
+            if word not in brand_words
+        ]
+
+        name_without_brand = " ".join(
+            name_words
+        ).strip()
+
+        if name_without_brand:
+            return (
+                f"{brand}|{name_without_brand}"
+            )
+
+        return brand
+
+    # --------------------------------------------------
+    # Fallback
+    # --------------------------------------------------
+
+    return name
+
+def get_nutrition_values(product):
+    """
+    Extract commonly available nutrition values per 100g/ml
+    from Open Food Facts.
+    """
+
+    nutriments = product.get("nutriments") or {}
+
+    def get_value(key):
+        value = nutriments.get(key)
+
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    return {
+        "energy": get_value("energy-kcal_100g"),
+        "sugar": get_value("sugars_100g"),
+        "fat": get_value("fat_100g"),
+        "saturated_fat": get_value("saturated-fat_100g"),
+        "sodium": get_value("sodium_100g"),
+        "protein": get_value("proteins_100g"),
+        "carbohydrates": get_value("carbohydrates_100g"),
+        "fiber": get_value("fiber_100g"),
+    }
+def calculate_personalized_score(
+    food_label,
+    candidate_product,
+    user_profile,
+):
+    """
+    Calculate a personalized alternative score.
+
+    Higher score = better match for the user's profile.
+    This is used only to rank already-relevant alternatives.
+    """
+
+    score = 50
+    reasons = []
+
+    if not user_profile:
+        return score, reasons
+
+    # --------------------------------------------------
+    # GET ORIGINAL PRODUCT NUTRITION
+    # --------------------------------------------------
+
+    analysis = food_label.analysis or {}
+
+    original_nutrition = {
+        "sugar": None,
+        "carbohydrates": None,
+        "fat": None,
+        "saturated_fat": None,
+        "sodium": None,
+        "energy": None,
+    }
+
+    nutrition_summary = (
+        analysis.get("nutrition_summary")
+        or ""
+    )
+
+    # nutrition_summary is stored as text.
+    #
+    # Example:
+    # "Per 100 ml: Energy 44 kcal,
+    # Carbohydrates 11 g, Total Sugars 10.7 g,
+    # Added Sugars 9 g, Total Fat 0 g,
+    # Protein 0 g, Sodium 22.1 mg."
+
+    if isinstance(
+        nutrition_summary,
+        str,
+    ):
+
+        # Energy
+        match = re.search(
+            r"energy\s*[:\-]?\s*([\d.]+)\s*kcal",
+            nutrition_summary,
+            re.IGNORECASE,
+        )
+
+        if match:
+            original_nutrition["energy"] = float(
+                match.group(1)
+            )
+
+        # Carbohydrates
+        match = re.search(
+            r"carbohydrates?\s*[:\-]?\s*([\d.]+)\s*g",
+            nutrition_summary,
+            re.IGNORECASE,
+        )
+
+        if match:
+            original_nutrition["carbohydrates"] = float(
+                match.group(1)
+            )
+
+        # Total sugars
+        match = re.search(
+            r"total\s+sugars?\s*[:\-]?\s*([\d.]+)\s*g",
+            nutrition_summary,
+            re.IGNORECASE,
+        )
+
+        if match:
+            original_nutrition["sugar"] = float(
+                match.group(1)
+            )
+
+        # Total fat
+        match = re.search(
+            r"total\s+fat\s*[:\-]?\s*([\d.]+)\s*g",
+            nutrition_summary,
+            re.IGNORECASE,
+        )
+
+        if match:
+            original_nutrition["fat"] = float(
+                match.group(1)
+            )
+
+        # Saturated fat
+        match = re.search(
+            r"saturated\s+fat\s*[:\-]?\s*([\d.]+)\s*g",
+            nutrition_summary,
+            re.IGNORECASE,
+        )
+
+        if match:
+            original_nutrition["saturated_fat"] = float(
+                match.group(1)
+            )
+
+        # Sodium
+        match = re.search(
+            r"sodium\s*[:\-]?\s*([\d.]+)\s*mg",
+            nutrition_summary,
+            re.IGNORECASE,
+        )
+
+        if match:
+            original_nutrition["sodium"] = float(
+                match.group(1)
+            )
+
+    # --------------------------------------------------
+    # GET CANDIDATE NUTRITION
+    # --------------------------------------------------
+
+    candidate_nutrition = get_nutrition_values(
+        candidate_product
+    )
+
+    # --------------------------------------------------
+    # MEDICAL CONDITIONS
+    # --------------------------------------------------
+
+    medical_conditions = [
+        condition.strip().lower()
+        for condition in (
+            user_profile.medical_conditions
+            or []
+        )
+        if condition
+        and condition.strip()
+    ]
+
+    if user_profile.other_medical_condition:
+
+        medical_conditions.append(
+            user_profile.other_medical_condition
+            .strip()
+            .lower()
+        )
+
+    # --------------------------------------------------
+    # ALLERGY SAFETY
+    # --------------------------------------------------
+
+    if not has_allergen_conflict(
+        candidate_product,
+        user_profile,
+    ):
+
+        score += 15
+
+        reasons.append(
+            "No detected conflict with your recorded allergies."
+        )
+
+    # --------------------------------------------------
+    # DIETARY PREFERENCE
+    # --------------------------------------------------
+
+    if not has_dietary_conflict(
+        candidate_product,
+        user_profile,
+    ):
+
+        score += 10
+
+        if user_profile.dietary_preference:
+
+            reasons.append(
+                "No detected conflict with your dietary preference."
+            )
+
+    # --------------------------------------------------
+    # NUTRITION COMPARISON
+    # --------------------------------------------------
+
+    nutrition_checks = [
+        ("sugar", "sugar"),
+        ("saturated_fat", "saturated fat"),
+        ("sodium", "sodium"),
+        ("fat", "total fat"),
+        ("energy", "calories"),
+    ]
+
+    for key, label in nutrition_checks:
+
+        original_value = (
+            original_nutrition.get(key)
+        )
+
+        candidate_value = (
+            candidate_nutrition.get(key)
+        )
+
+        if (
+            original_value is not None
+            and candidate_value is not None
+        ):
+
+            try:
+
+                original_value = float(
+                    original_value
+                )
+
+                candidate_value = float(
+                    candidate_value
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+                continue
+
+            if candidate_value < original_value:
+
+                score += 4
+
+                reasons.append(
+                    f"Lower {label} than the analyzed product."
+                )
+
+            elif candidate_value > original_value:
+
+                score -= 2
+
+    # --------------------------------------------------
+    # MEDICAL-CONDITION RELEVANCE
+    # --------------------------------------------------
+
+    for condition in medical_conditions:
+
+        # --------------------------------------------------
+        # DIABETES
+        # --------------------------------------------------
+
+        if (
+            "diabetes" in condition
+            or "high blood sugar" in condition
+        ):
+
+            candidate_sugar = (
+                candidate_nutrition.get(
+                    "sugar"
+                )
+            )
+
+            if candidate_sugar is not None:
+
+                try:
+
+                    candidate_sugar = float(
+                        candidate_sugar
+                    )
+
+                except (
+                    TypeError,
+                    ValueError,
+                ):
+
+                    candidate_sugar = None
+
+                if candidate_sugar is not None:
+
+                    if candidate_sugar < 5:
+
+                        score += 15
+
+                        reasons.append(
+                            "Lower sugar content may be a "
+                            "better match for your recorded "
+                            "diabetes-related preference."
+                        )
+
+                    elif candidate_sugar < 10:
+
+                        score += 8
+
+                        reasons.append(
+                            "Moderate sugar content may be a "
+                            "better match for your recorded "
+                            "diabetes-related preference."
+                        )
+
+        # --------------------------------------------------
+        # HIGH BLOOD PRESSURE
+        # --------------------------------------------------
+
+        if (
+            "hypertension" in condition
+            or "high blood pressure" in condition
+        ):
+
+            candidate_sodium = (
+                candidate_nutrition.get(
+                    "sodium"
+                )
+            )
+
+            if candidate_sodium is not None:
+
+                try:
+
+                    candidate_sodium = float(
+                        candidate_sodium
+                    )
+
+                except (
+                    TypeError,
+                    ValueError,
+                ):
+
+                    candidate_sodium = None
+
+                if candidate_sodium is not None:
+
+                    if candidate_sodium < 120:
+
+                        score += 15
+
+                        reasons.append(
+                            "Lower sodium content may be "
+                            "a better match for your recorded "
+                            "blood-pressure related preference."
+                        )
+
+                    elif candidate_sodium < 300:
+
+                        score += 8
+
+                        reasons.append(
+                            "Moderate sodium content may be "
+                            "a better match for your recorded "
+                            "blood-pressure related preference."
+                        )
+
+        # --------------------------------------------------
+        # HIGH CHOLESTEROL
+        # --------------------------------------------------
+
+        if "high cholesterol" in condition:
+
+            candidate_fat = (
+                candidate_nutrition.get(
+                    "fat"
+                )
+            )
+
+            candidate_saturated_fat = (
+                candidate_nutrition.get(
+                    "saturated_fat"
+                )
+            )
+
+            if (
+                candidate_saturated_fat
+                is not None
+            ):
+
+                try:
+
+                    candidate_saturated_fat = float(
+                        candidate_saturated_fat
+                    )
+
+                except (
+                    TypeError,
+                    ValueError,
+                ):
+
+                    candidate_saturated_fat = None
+
+                if (
+                    candidate_saturated_fat
+                    is not None
+                    and candidate_saturated_fat < 1.5
+                ):
+
+                    score += 15
+
+                    reasons.append(
+                        "Lower saturated fat content may be "
+                        "a better match for your recorded "
+                        "cholesterol-related preference."
+                    )
+
+            if (
+                candidate_fat is not None
+            ):
+
+                try:
+
+                    candidate_fat = float(
+                        candidate_fat
+                    )
+
+                except (
+                    TypeError,
+                    ValueError,
+                ):
+
+                    candidate_fat = None
+
+                if (
+                    candidate_fat is not None
+                    and candidate_fat < 5
+                ):
+
+                    score += 8
+
+                    reasons.append(
+                        "Lower fat content may be a better "
+                        "match for your recorded "
+                        "cholesterol-related preference."
+                    )
+
+    # --------------------------------------------------
+    # KEEP SCORE BETWEEN 0 AND 100
+    # --------------------------------------------------
+
+    score = max(
+        0,
+        min(score, 100),
+    )
+
+    # --------------------------------------------------
+    # REMOVE DUPLICATE REASONS
+    # --------------------------------------------------
+
+    reasons = list(
+        dict.fromkeys(reasons)
+    )
+
+    return score, reasons
+
 def find_alternatives(food_label, page_size=30):
     category = get_product_category(
         food_label
@@ -919,6 +1518,7 @@ def find_alternatives(food_label, page_size=30):
         original_name,
         category,
     )
+
     # First search using the broad category.
     products = search_products_by_category(
         category,
@@ -950,23 +1550,28 @@ def find_alternatives(food_label, page_size=30):
             except requests.RequestException:
                 continue
 
-    # Remove duplicate products.
+    # Remove duplicate products and duplicate product families.
     unique_products = {}
 
     for product in products:
-
-        code = product.get("code")
 
         product_name = normalize_text(
             product.get("product_name") or ""
         )
 
-        key = code or product_name
+        if not product_name:
+            continue
+
+        # Use the product-family key to identify
+        # duplicate product entries.
+        key = get_product_family_key(product)
 
         if not key:
             continue
 
-        unique_products[key] = product
+        # Keep only the first product from each family.
+        if key not in unique_products:
+            unique_products[key] = product
 
     products = list(
         unique_products.values()
@@ -1015,6 +1620,7 @@ def find_alternatives(food_label, page_size=30):
         ):
             continue
 
+        # Existing relevance score.
         product["_relevance_score"] = (
             calculate_relevance(
                 food_label,
@@ -1022,23 +1628,51 @@ def find_alternatives(food_label, page_size=30):
             )
         )
 
+        # Personalized score based on
+        # the user's profile and health preferences.
+        product["_personalized_score"], product[
+            "_recommendation_reasons"
+        ] = calculate_personalized_score(
+            food_label,
+            product,
+            user_profile,
+        )
+
         alternatives.append(product)
 
-    # Highest relevance first.
+    # Highest personalized score first.
+    # Relevance score is used as the tie-breaker.
     alternatives.sort(
-        key=lambda product: product.get(
-            "_relevance_score",
-            0,
+        key=lambda product: (
+            product.get(
+                "_personalized_score",
+                0,
+            ),
+            product.get(
+                "_relevance_score",
+                0,
+            ),
         ),
         reverse=True,
     )
 
-    # Remove internal score.
+    # Remove internal scores and expose
+    # personalized recommendation information.
     for product in alternatives:
 
         product.pop(
             "_relevance_score",
             None,
+        )
+
+        product["personalized_score"] = product.pop(
+            "_personalized_score",
+            0,
+        )
+
+        product["recommendation_reasons"] = product.pop(
+            "_recommendation_reasons",
+            [],
         )
 
     return alternatives[:10]
