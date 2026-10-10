@@ -4108,6 +4108,16 @@ def find_alternatives(food_label, page_size=30):
         ):
 
             continue
+        
+        # Remove medical-condition conflicts
+        if (
+            user_profile
+            and has_medical_condition_conflict(
+               product,
+               user_profile,
+           )
+        ):
+           continue
 
         # Remove dietary conflicts.
 

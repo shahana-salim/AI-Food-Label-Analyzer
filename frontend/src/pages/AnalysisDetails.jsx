@@ -1,58 +1,3 @@
-// import { useEffect, useState } from "react";
-// import { useParams } from "react-router-dom";
-// import Breadcrumb from "../components/Breadcrumb";
-
-// import api from "../services/api";
-// import AnalysisResult from "../components/AnalysisResult";
-
-// function AnalysisDetails() {
-//     const { id } = useParams();
-
-//     const [analysis, setAnalysis] = useState(null);
-//     const [productName, setProductName] = useState("");
-
-//     useEffect(() => {
-//         const fetchAnalysis = async () => {
-//             try {
-//                 const token = localStorage.getItem("access_token");
-
-//                 const response = await api.get(`history/${id}/`, {
-//                     headers: {
-//                         Authorization: `Bearer ${token}`,
-//                     },
-//                 });
-
-//                 setAnalysis(response.data.analysis);
-//                 setProductName(response.data.product_name);
-
-//             } catch (error) {
-//                 console.error(error);
-//             }
-//         };
-
-//         fetchAnalysis();
-//     }, [id]);
-
-//     return (
-//         <div className="p-8">
-//             <Breadcrumb
-//                 items={[
-//                     { label: "Home", path: "/" },
-//                     { label: "History", path: "/history" },
-//                     { label: productName || "Analysis Details" },
-//                 ]}
-//             />
-
-//             <AnalysisResult analysis={analysis} />
-
-//         </div>
-//     );
-// }
-
-// export default AnalysisDetails;
-
-
-
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -71,6 +16,8 @@ function AnalysisDetails() {
     const [loadingAlternatives, setLoadingAlternatives] = useState(false);
     const [alternativesLoaded, setAlternativesLoaded] = useState(false);
     const [alternativeError, setAlternativeError] = useState("");
+
+    const [expandedReasons, setExpandedReasons] = useState({});
 
     useEffect(() => {
         const fetchAnalysis = async () => {
@@ -123,16 +70,12 @@ function AnalysisDetails() {
         }
     };
 
-    const formatCategory = (categories) => {
-        if (!categories || categories.length === 0) {
-            return "";
-        }
 
-        const category = categories[0]
-            .replace("en:", "")
-            .replace(/-/g, " ");
-
-        return category.charAt(0).toUpperCase() + category.slice(1);
+    const toggleReasons = (index) => {
+        setExpandedReasons((previous) => ({
+            ...previous,
+            [index]: !previous[index],
+        }));
     };
 
     return (
@@ -209,10 +152,7 @@ function AnalysisDetails() {
                     {!loadingAlternatives && alternatives.length > 0 && (
                         <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                             {alternatives.map((product, index) => {
-                                const category = formatCategory(
-                                    product.categories_tags
-                                );
-
+                                
 
                                 return (
                                     <div
@@ -253,23 +193,31 @@ function AnalysisDetails() {
                                                 </p>
                                             )}
 
-                                           
+
 
                                             {typeof product.personalized_score === "number" && (
                                                 <div className="mt-4 rounded-lg bg-emerald-50 p-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm font-medium text-slate-700">
-                                                            Personalized Match
-                                                        </span>
 
-                                                        <span className="text-sm font-bold text-emerald-700">
-                                                            {product.personalized_score}/100
-                                                        </span>
+                                                    <div className="flex items-center justify-between">
+                                                        
+                                                        {product.recommendation_reasons &&
+                                                            product.recommendation_reasons.length > 0 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => toggleReasons(index)}
+                                                                    className="text-sm font-medium text-emerald-700 hover:text-emerald-800 hover:underline"
+                                                                >
+                                                                    {expandedReasons[index]
+                                                                        ? "Hide details ↑"
+                                                                        : "Why this recommendation? ↓"}
+                                                                </button>
+                                                            )}
                                                     </div>
 
-                                                    {product.recommendation_reasons &&
+                                                    {expandedReasons[index] &&
+                                                        product.recommendation_reasons &&
                                                         product.recommendation_reasons.length > 0 && (
-                                                            <ul className="mt-2 space-y-1">
+                                                            <ul className="mt-3 space-y-1">
                                                                 {product.recommendation_reasons.map(
                                                                     (reason, reasonIndex) => (
                                                                         <li
@@ -282,6 +230,7 @@ function AnalysisDetails() {
                                                                 )}
                                                             </ul>
                                                         )}
+
                                                 </div>
                                             )}
 

@@ -17,6 +17,8 @@ function UploadCard() {
     const [alternativesLoaded, setAlternativesLoaded] = useState(false);
     const [alternativeError, setAlternativeError] = useState("");
 
+    const [expandedReasons, setExpandedReasons] = useState({});
+
     const [error, setError] = useState("");
     const [isDragging, setIsDragging] = useState(false);
 
@@ -31,8 +33,6 @@ function UploadCard() {
         ];
 
         let index = 0;
-
-        setLoadingMessage(messages[0]);
 
         const interval = setInterval(() => {
             index = (index + 1) % messages.length;
@@ -200,16 +200,11 @@ function UploadCard() {
         }
     };
 
-    const formatCategory = (categories) => {
-        if (!categories || categories.length === 0) {
-            return "";
-        }
-
-        const category = categories[0]
-            .replace("en:", "")
-            .replace(/-/g, " ");
-
-        return category.charAt(0).toUpperCase() + category.slice(1);
+    const toggleReasons = (index) => {
+        setExpandedReasons((previous) => ({
+            ...previous,
+            [index]: !previous[index],
+        }));
     };
 
     return (
@@ -542,11 +537,6 @@ function UploadCard() {
 
                                         {alternatives.map((product, index) => {
 
-                                            const calories =
-                                                product.nutriments?.[
-                                                "energy-kcal_100g"
-                                                ];
-
                                             return (
                                                 <div
                                                     key={product.code || index}
@@ -595,19 +585,27 @@ function UploadCard() {
 
                                                     {typeof product.personalized_score === "number" && (
                                                         <div className="mt-4 rounded-lg bg-emerald-50 p-3">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-sm font-medium text-slate-700">
-                                                                    Personalized Match
-                                                                </span>
 
-                                                                <span className="text-sm font-bold text-emerald-700">
-                                                                    {product.personalized_score}/100
-                                                                </span>
+                                                            <div className="flex items-center justify-between">
+
+                                                                {product.recommendation_reasons &&
+                                                                    product.recommendation_reasons.length > 0 && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => toggleReasons(index)}
+                                                                            className="text-sm font-medium text-emerald-700 hover:text-emerald-800 hover:underline"
+                                                                        >
+                                                                            {expandedReasons[index]
+                                                                                ? "Hide details ↑"
+                                                                                : "Why this recommendation? ↓"}
+                                                                        </button>
+                                                                    )}
                                                             </div>
 
-                                                            {product.recommendation_reasons &&
+                                                            {expandedReasons[index] &&
+                                                                product.recommendation_reasons &&
                                                                 product.recommendation_reasons.length > 0 && (
-                                                                    <ul className="mt-2 space-y-1">
+                                                                    <ul className="mt-3 space-y-1">
                                                                         {product.recommendation_reasons.map(
                                                                             (reason, reasonIndex) => (
                                                                                 <li
@@ -620,8 +618,10 @@ function UploadCard() {
                                                                         )}
                                                                     </ul>
                                                                 )}
+
                                                         </div>
                                                     )}
+
 
 
 
