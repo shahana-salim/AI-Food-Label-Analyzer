@@ -7,6 +7,7 @@ import {
     FaSignInAlt,
     FaUserPlus,
     FaBalanceScale,
+    FaInfoCircle,
 } from "react-icons/fa";
 
 import { useEffect, useState } from "react";
@@ -119,6 +120,35 @@ function Sidebar({ handleLogout }) {
 
                     </button>
 
+                    {/* About */}
+
+                    <button
+                        onClick={() => {
+                            if (location.pathname === "/") {
+                                document.getElementById("about")?.scrollIntoView({
+                                    behavior: "smooth",
+                                });
+                            } else {
+                                navigate("/?section=about");
+                            }
+                        }}
+                        className="
+                            flex
+                            items-center
+                            gap-2
+                            px-4
+                            py-2
+                            rounded-lg
+                            transition
+                            hover:bg-emerald-600
+                        "
+                    >
+                        <FaInfoCircle />
+
+                        <span>
+                            About
+                        </span>
+                    </button>
 
                     {!isLoggedIn ? (
 

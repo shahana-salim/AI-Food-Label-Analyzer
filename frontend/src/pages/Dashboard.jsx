@@ -2,7 +2,7 @@
 import HeroCard from "../components/HeroCard";
 import StatCard from "../components/StatCard";
 import UploadCard from "../components/UploadCard";
-
+import About from "../components/About";
 
 import { useEffect, useState } from "react";
 
@@ -166,7 +166,7 @@ function Dashboard() {
                 )}
 
             </main>
-
+           <About />
         </div>
 
     );
